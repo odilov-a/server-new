@@ -11,12 +11,14 @@ const studentSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     username: {
       type: String,
       unique: [true, "Username already exists"],
-      required: true,
+    },
+    email: {
+      type: String,
+      unique: [true, "Email already exists"],
     },
     balance: {
       type: Number,
