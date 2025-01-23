@@ -59,6 +59,7 @@ exports.getMeStudent = async (req, res) => {
         phoneNumber: student.phoneNumber,
         photoUrl: student.photoUrl,
         isActive: student.isActive,
+        email: student.email,
       },
     });
   } catch (error) {
