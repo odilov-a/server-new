@@ -7,7 +7,7 @@ const Attempt = require("../models/Attempt.js");
 exports.getAllStudents = async (req, res) => {
   try {
     const students = await Student.find().select(
-      "balance firstName isActive lastName phoneNumber photoUrl username lastLogin"
+      "balance firstName isActive lastName phoneNumber photoUrl username lastLogin email"
     );
     return res.json({ data: students });
   } catch (error) {
