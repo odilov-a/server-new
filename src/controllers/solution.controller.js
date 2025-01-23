@@ -1,84 +1,204 @@
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 const { exec } = require("child_process");
 const Problem = require("../models/Problem.js");
 const Student = require("../models/Student.js");
 const Attempt = require("../models/Attempt.js");
-const { executeCode, downloadFile, extractErrorMessage } = require("../utils/tools.js")
+
+const stripAnsi = (str) => str.replace(/\x1b\[[0-9;]*m/g, "").trim();
+
+const executeCode = async (
+  fileName,
+  command,
+  input,
+  expectedOutput,
+  code,
+  timeLimit,
+  memoryLimit
+) => {
+  const filePath = path.join(__dirname, "../tests", fileName);
+  fs.writeFileSync(filePath, code, { encoding: "utf8" });
+  return new Promise((resolve) => {
+    const child = exec(
+      command,
+      { timeout: timeLimit * 1000 },
+      (error, stdout, stderr) => {
+        const actualOutput = stripAnsi(stdout.toString());
+        const isCorrect = actualOutput.trim() === expectedOutput.trim();
+        resolve({
+          actualOutput,
+          isCorrect,
+          error: error ? stripAnsi(stderr.toString()) : null,
+        });
+      }
+    );
+
+    if (input) {
+      child.stdin.write(input);
+      child.stdin.end();
+    }
+
+    const memoryCheckInterval = setInterval(() => {
+      const usage = process.memoryUsage();
+      const heapUsedMB = usage.heapUsed / 1024 / 1024;
+      if (heapUsedMB > memoryLimit) {
+        clearInterval(memoryCheckInterval);
+        child.kill("SIGKILL");
+        resolve({
+          actualOutput: null,
+          isCorrect: false,
+          error: "Memory limit exceeded",
+        });
+      }
+    }, 100);
+    child.on("exit", () => clearInterval(memoryCheckInterval));
+  });
+};
+
+const downloadFile = async (url, filepath) => {
+  try {
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    fs.writeFileSync(filepath, Buffer.from(response.data));
+  } catch (error) {
+    throw new Error("Invalid URL");
+  }
+};
+
+const extractErrorMessage = (errorOutput) => {
+  const lines = errorOutput.split("\n");
+  const relevantLine = lines.find(
+    (line) => line.includes("Error") || line.includes("Exception")
+  );
+  return relevantLine || "Error in compiler code";
+};
 
 exports.checkSolution = async (req, res) => {
   try {
     const { code, language } = req.body;
-    const studentId = req.student?.id;
     if (!code || !language) {
-      return res.status(400).json({ status: "error", message: "Code and language are required" });
+      return res.status(400).json({
+        status: "error",
+        message: "Code and language are required",
+      });
     }
-    if (!studentId) {
-      return res.status(401).json({ status: "error", message: "User not authenticated" });
+    if (!req.student || !req.student.id) {
+      return res.status(401).json({
+        status: "error",
+        message: "User not authenticated",
+      });
     }
+
     const problem = await Problem.findById(req.params.id);
     if (!problem) {
-      return res.status(404).json({ status: "error", message: "Problem not found" });
+      return res.status(404).json({
+        status: "error",
+        message: "Problem not found",
+      });
     }
+
     const { timeLimit, memoryLimit, testCases, point } = problem;
     if (!testCases || testCases.length === 0) {
-      return res.status(400).json({ status: "error", message: "No test cases found for this problem" });
+      return res.status(400).json({
+        status: "error",
+        message: "Test cases not found for the problem",
+      });
     }
-    const isFirstAttemptCorrect = !(await Attempt.exists({ studentId, problemId: problem._id, isCorrect: true }));
+
+    const existingAttempt = await Attempt.findOne({
+      studentId: req.student.id,
+      problemId: problem._id,
+      isCorrect: true,
+    });
+    const isFirstAttemptCorrect = !existingAttempt;
+
     const timestamp = Date.now();
     let fileName, command;
+    switch (language.toLowerCase()) {
+      case "python":
+        fileName = `${timestamp}.py`;
+        command = `python ${path.join(__dirname, "../tests", fileName)}`;
+        break;
+      case "java":
+        fileName = `Solution.java`;
+        const updatedJavaCode = code.replace(
+          /public\s+class\s+\w+/g,
+          "public class Solution"
+        );
+        fs.writeFileSync(
+          path.join(__dirname, "../tests", fileName),
+          updatedJavaCode,
+          { encoding: "utf8" }
+        );
+        command = `javac ${path.join(
+          __dirname,
+          "../tests",
+          fileName
+        )} && java -cp ${path.join(__dirname, "../tests")} Solution`;
+        break;
+      case "javascript":
+        fileName = `${timestamp}.js`;
+        command = `node ${path.join(__dirname, "../tests", fileName)}`;
+        break;
+      case "cpp":
+      case "c++":
+        fileName = `${timestamp}.cpp`;
+        const outputFileName = `${timestamp}.exe`;
+        command = `g++ ${path.join(
+          __dirname,
+          "../tests",
+          fileName
+        )} -o ${path.join(
+          __dirname,
+          "../tests",
+          outputFileName
+        )} && ${path.join(__dirname, "../tests", outputFileName)}`;
+        break;
+      default:
+        return res.status(400).json({
+          status: "error",
+          message: "Invalid language",
+        });
+    }
 
-    const filePath = path.join(__dirname, "../tests");
-    const setupFileAndCommand = () => {
-      switch (language.toLowerCase()) {
-        case "python":
-          fileName = `${timestamp}.py`;
-          command = `python ${path.join(filePath, fileName)}`;
-          break;
-        case "java":
-          fileName = "Solution.java";
-          const updatedJavaCode = code.replace(/public\s+class\s+\w+/g, "public class Solution");
-          fs.writeFileSync(path.join(filePath, fileName), updatedJavaCode, { encoding: "utf8" });
-          command = `javac ${path.join(filePath, fileName)} && java -cp ${filePath} Solution`;
-          break;
-        case "javascript":
-          fileName = `${timestamp}.js`;
-          command = `node ${path.join(filePath, fileName)}`;
-          break;
-        case "cpp":
-        case "c++":
-          fileName = `${timestamp}.cpp`;
-          const outputFileName = `${timestamp}.exe`;
-          command = `g++ ${path.join(filePath, fileName)} -o ${path.join(filePath, outputFileName)} && ${path.join(filePath, outputFileName)}`;
-          break;
-        default:
-          throw new Error("Unsupported programming language");
-      }
-    };
-    setupFileAndCommand();
     let allCorrect = true;
     let failedTestCaseIndex = null;
-
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
-      const inputFilePath = path.join(filePath, `input_${timestamp}.txt`);
-      const outputFilePath = path.join(filePath, `output_${timestamp}.txt`);
+      const inputFilePath = path.join(
+        __dirname,
+        "../tests",
+        `input_${timestamp}.txt`
+      );
+      const outputFilePath = path.join(
+        __dirname,
+        "../tests",
+        `output_${timestamp}.txt`
+      );
       await downloadFile(testCase.inputFileUrl, inputFilePath);
       await downloadFile(testCase.outputFileUrl, outputFilePath);
       const input = fs.readFileSync(inputFilePath, "utf-8");
       const expectedOutput = fs.readFileSync(outputFilePath, "utf-8");
-      const result = await executeCode(fileName, command, input, expectedOutput, code, timeLimit, memoryLimit);
-      fs.unlinkSync(inputFilePath);
-      fs.unlinkSync(outputFilePath);
+      const result = await executeCode(
+        fileName,
+        command,
+        input,
+        expectedOutput,
+        code,
+        timeLimit,
+        memoryLimit
+      );
       if (!result.isCorrect) {
         allCorrect = false;
         failedTestCaseIndex = i + 1;
         break;
       }
+      fs.unlinkSync(inputFilePath);
+      fs.unlinkSync(outputFilePath);
     }
 
     const attempt = new Attempt({
-      studentId,
+      studentId: req.student.id,
       problemId: problem._id,
       code,
       language,
@@ -88,29 +208,38 @@ exports.checkSolution = async (req, res) => {
       memoryLimit,
     });
     await attempt.save();
-    const student = await Student.findById(studentId);
+
+    const student = await Student.findById(req.student.id);
     if (!student) {
-      return res.status(404).json({ status: "error", message: "Student not found" });
+      return res.status(404).json({
+        status: "error",
+        message: "Student not found",
+      });
     }
 
-    if (student.balance === null) student.balance = 0;
-    if (allCorrect && isFirstAttemptCorrect) student.balance += point;
-    if (!student.history.includes(problem._id)) student.history.push(problem._id);
+    if (student.balance === null) {
+      student.balance = 0;
+    }
+    if (allCorrect && isFirstAttemptCorrect) {
+      student.balance += point;
+    }
+    student.history.push(problem._id);
     await student.save();
-    fs.unlinkSync(path.join(filePath, fileName));
+
+    fs.unlinkSync(path.join(__dirname, "../tests", fileName));
+
     return res.json({
-      status: "success",
       data: {
         correct: allCorrect,
-        failedTestCaseIndex,
         balance: student.balance,
         history: student.history,
       },
     });
   } catch (error) {
+    const errorMessage = extractErrorMessage(error.message);
     return res.status(500).json({
       status: "error",
-      message: extractErrorMessage(error.message),
+      message: errorMessage,
     });
   }
 };
