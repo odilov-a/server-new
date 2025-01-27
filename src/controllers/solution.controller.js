@@ -27,8 +27,9 @@ const executeCode = async (
       command,
       { timeout: timeLimit * 1000 },
       (error, stdout, stderr) => {
-        const actualOutput = stripAnsi(stdout.toString());
-        const isCorrect = actualOutput.trim() === expectedOutput.trim();
+        const actualOutput = stripAnsi(stdout.toString()).trim();
+        const expectedTrimmed = stripAnsi(expectedOutput).trim();
+        const isCorrect = actualOutput === expectedTrimmed;
         resolve({
           actualOutput,
           isCorrect,
@@ -91,7 +92,6 @@ exports.checkSolution = async (req, res) => {
         message: "User not authenticated",
       });
     }
-
     const problem = await Problem.findById(req.params.id);
     if (!problem) {
       return res.status(404).json({
@@ -99,7 +99,6 @@ exports.checkSolution = async (req, res) => {
         message: "Problem not found",
       });
     }
-
     const { timeLimit, memoryLimit, testCases, point } = problem;
     if (!testCases || testCases.length === 0) {
       return res.status(400).json({
@@ -107,7 +106,6 @@ exports.checkSolution = async (req, res) => {
         message: "Test cases not found for the problem",
       });
     }
-
     const existingAttempt = await Attempt.findOne({
       studentId: req.student.id,
       problemId: problem._id,
@@ -192,6 +190,7 @@ exports.checkSolution = async (req, res) => {
         memoryLimit
       );
       if (!result.isCorrect) {
+        console.log(`Test case ${i + 1} failed.`);
         allCorrect = false;
         failedTestCaseIndex = i + 1;
         break;
@@ -228,9 +227,7 @@ exports.checkSolution = async (req, res) => {
     }
     student.history.push(problem._id);
     await student.save();
-
     await fs.unlink(path.join(__dirname, "../tests", fileName));
-
     return res.json({
       data: {
         correct: allCorrect,
