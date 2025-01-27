@@ -9,16 +9,14 @@ const Attempt = require("../models/Attempt.js");
 const stripAnsi = (str) => str.replace(/\x1b\[[0-9;]*m/g, "").trim();
 
 const executeCode = async (
-  fileName,
+  // fileName,
   command,
   input,
   expectedOutput,
-  code,
   timeLimit,
   memoryLimit
 ) => {
-  const filePath = path.join(__dirname, "../tests", fileName);
-  fs.writeFileSync(filePath, code, { encoding: "utf8" });
+  // const filePath = path.join(__dirname, "../tests", fileName);
   return new Promise((resolve) => {
     const child = exec(
       command,
@@ -76,12 +74,14 @@ const extractErrorMessage = (errorOutput) => {
 exports.checkSolution = async (req, res) => {
   try {
     const { code, language } = req.body;
+
     if (!code || !language) {
       return res.status(400).json({
         status: "error",
         message: "Code and language are required",
       });
     }
+
     if (!req.student || !req.student.id) {
       return res.status(401).json({
         status: "error",
@@ -110,10 +110,17 @@ exports.checkSolution = async (req, res) => {
       problemId: problem._id,
       isCorrect: true,
     });
-    const isFirstAttemptCorrect = !existingAttempt;
+
+    if (existingAttempt) {
+      return res.status(400).json({
+        status: "error",
+        message: "You have already successfully solved this problem.",
+      });
+    }
 
     const timestamp = Date.now();
     let fileName, command;
+
     switch (language.toLowerCase()) {
       case "python":
         fileName = `${timestamp}.py`;
@@ -163,38 +170,48 @@ exports.checkSolution = async (req, res) => {
 
     let allCorrect = true;
     let failedTestCaseIndex = null;
-    for (let i = 0; i < testCases.length; i++) {
-      const testCase = testCases[i];
-      const inputFilePath = path.join(
-        __dirname,
-        "../tests",
-        `input_${timestamp}.txt`
-      );
-      const outputFilePath = path.join(
-        __dirname,
-        "../tests",
-        `output_${timestamp}.txt`
-      );
-      await downloadFile(testCase.inputFileUrl, inputFilePath);
-      await downloadFile(testCase.outputFileUrl, outputFilePath);
-      const input = fs.readFileSync(inputFilePath, "utf-8");
-      const expectedOutput = fs.readFileSync(outputFilePath, "utf-8");
-      const result = await executeCode(
-        fileName,
-        command,
-        input,
-        expectedOutput,
-        code,
-        timeLimit,
-        memoryLimit
-      );
-      if (!result.isCorrect) {
-        allCorrect = false;
-        failedTestCaseIndex = i + 1;
-        break;
+
+    try {
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        const inputFilePath = path.join(
+          __dirname,
+          "../tests",
+          `input_${timestamp}.txt`
+        );
+        const outputFilePath = path.join(
+          __dirname,
+          "../tests",
+          `output_${timestamp}.txt`
+        );
+
+        await downloadFile(testCase.inputFileUrl, inputFilePath);
+        await downloadFile(testCase.outputFileUrl, outputFilePath);
+
+        const input = fs.readFileSync(inputFilePath, "utf-8");
+        const expectedOutput = fs.readFileSync(outputFilePath, "utf-8");
+
+        const result = await executeCode(
+          fileName,
+          command,
+          input,
+          expectedOutput,
+          timeLimit,
+          memoryLimit
+        );
+        if (!result.isCorrect) {
+          allCorrect = false;
+          failedTestCaseIndex = i + 1;
+          break;
+        }
+
+        fs.unlinkSync(inputFilePath);
+        fs.unlinkSync(outputFilePath);
       }
-      fs.unlinkSync(inputFilePath);
-      fs.unlinkSync(outputFilePath);
+    } finally {
+      if (fs.existsSync(path.join(__dirname, "../tests", fileName))) {
+        fs.unlinkSync(path.join(__dirname, "../tests", fileName));
+      }
     }
 
     const attempt = new Attempt({
@@ -220,13 +237,11 @@ exports.checkSolution = async (req, res) => {
     if (student.balance === null) {
       student.balance = 0;
     }
-    if (allCorrect && isFirstAttemptCorrect) {
+    if (allCorrect) {
       student.balance += point;
     }
     student.history.push(problem._id);
     await student.save();
-
-    fs.unlinkSync(path.join(__dirname, "../tests", fileName));
 
     return res.json({
       data: {
@@ -243,6 +258,7 @@ exports.checkSolution = async (req, res) => {
     });
   }
 };
+
 
 exports.testRunCode = async (req, res) => {
   try {
