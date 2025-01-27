@@ -86,10 +86,25 @@ exports.getAllProblemsByTeacher = async (req, res) => {
 
 exports.getAllProblemsByDifficulty = async (req, res) => {
   try {
+    const { lang } = req.query;
     const problems = await Problem.find({ difficulty: req.params.difficulty })
       .populate("subject difficulty")
       .lean();
-    return res.json({ data: problems });
+    const result = problems.map((problem) => formatProblem(problem, lang));
+    return res.json({ data: result });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getProblemsBySubject = async (req, res) => {
+  try {
+    const { lang } = req.query;
+    const problems = await Problem.find({ subject: req.params.subject })
+      .populate("subject difficulty")
+      .lean();
+    const result = problems.map((problem) => formatProblem(problem, lang));
+    return res.json({ data: result });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -113,18 +128,6 @@ exports.searchProblems = async (req, res) => {
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-exports.getProblemsBySubjectAndDifficulty = async (req, res) => {
-  try {
-    const { subject, difficulty } = req.params;
-    const problems = await Problem.find({ subject, difficulty })
-      .populate("subject difficulty")
-      .lean();
-    return res.json({ data: problems });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

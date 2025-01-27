@@ -13,7 +13,8 @@ problemRouter.get("/teacher/problems", authenticate, requireRole(["teacher", "ad
 problemRouter.post("/run", authenticate, requireRole(["student", "teacher", "admin"]), solutionController.testRunCode);
 
 problemRouter.get("/difficulty/:difficulty", authenticate, requireRole(["teacher", "admin", "student"]), problemController.getAllProblemsByDifficulty);
-problemRouter.get("/:subject/:difficulty", authenticate, requireRole(["teacher", "admin", "student"]), problemController.getProblemsBySubjectAndDifficulty);
+problemRouter.get("/subject/:subject", authenticate, requireRole(["teacher", "admin", "student"]), problemController.getProblemsBySubject);
+
 problemRouter.get("/:id", authenticate, requireRole(["teacher", "admin", "student"]), problemController.getProblemById);
 
 problemRouter.put("/:id", authenticate, requireRole(["teacher", "admin"]), problemController.updateProblem);
