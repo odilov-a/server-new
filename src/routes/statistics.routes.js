@@ -4,6 +4,7 @@ const { authenticate } = require("../middlewares/auth.middleware.js");
 const { requireRole } = require("../middlewares/role.middleware.js");
 const statisticsRouter = Router();
 
+statisticsRouter.get("/students", authenticate, requireRole(["admin"]), statisticsController.countStudents);
 statisticsRouter.get("/languages", authenticate, requireRole(["admin"]), statisticsController.languageDistribution);
 
 module.exports = statisticsRouter;
