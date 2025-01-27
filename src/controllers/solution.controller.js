@@ -1,10 +1,13 @@
-const fs = require("fs");
+const fs = require("fs/promises");
 const path = require("path");
 const axios = require("axios");
 const { exec } = require("child_process");
+const util = require("util");
 const Problem = require("../models/Problem.js");
 const Student = require("../models/Student.js");
 const Attempt = require("../models/Attempt.js");
+
+const execAsync = util.promisify(exec);
 
 const stripAnsi = (str) => str.replace(/\x1b\[[0-9;]*m/g, "").trim();
 
@@ -18,7 +21,7 @@ const executeCode = async (
   memoryLimit
 ) => {
   const filePath = path.join(__dirname, "../tests", fileName);
-  fs.writeFileSync(filePath, code, { encoding: "utf8" });
+  await fs.writeFile(filePath, code, { encoding: "utf8" });
   return new Promise((resolve) => {
     const child = exec(
       command,
@@ -59,7 +62,7 @@ const executeCode = async (
 const downloadFile = async (url, filepath) => {
   try {
     const response = await axios.get(url, { responseType: "arraybuffer" });
-    fs.writeFileSync(filepath, Buffer.from(response.data));
+    await fs.writeFile(filepath, Buffer.from(response.data));
   } catch (error) {
     throw new Error("Invalid URL");
   }
@@ -125,7 +128,7 @@ exports.checkSolution = async (req, res) => {
           /public\s+class\s+\w+/g,
           "public class Solution"
         );
-        fs.writeFileSync(
+        await fs.writeFile(
           path.join(__dirname, "../tests", fileName),
           updatedJavaCode,
           { encoding: "utf8" }
@@ -177,8 +180,8 @@ exports.checkSolution = async (req, res) => {
       );
       await downloadFile(testCase.inputFileUrl, inputFilePath);
       await downloadFile(testCase.outputFileUrl, outputFilePath);
-      const input = fs.readFileSync(inputFilePath, "utf-8");
-      const expectedOutput = fs.readFileSync(outputFilePath, "utf-8");
+      const input = await fs.readFile(inputFilePath, "utf-8");
+      const expectedOutput = await fs.readFile(outputFilePath, "utf-8");
       const result = await executeCode(
         fileName,
         command,
@@ -193,8 +196,8 @@ exports.checkSolution = async (req, res) => {
         failedTestCaseIndex = i + 1;
         break;
       }
-      fs.unlinkSync(inputFilePath);
-      fs.unlinkSync(outputFilePath);
+      await fs.unlink(inputFilePath);
+      await fs.unlink(outputFilePath);
     }
 
     const attempt = new Attempt({
@@ -226,7 +229,7 @@ exports.checkSolution = async (req, res) => {
     student.history.push(problem._id);
     await student.save();
 
-    fs.unlinkSync(path.join(__dirname, "../tests", fileName));
+    await fs.unlink(path.join(__dirname, "../tests", fileName));
 
     return res.json({
       data: {
