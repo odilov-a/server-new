@@ -148,6 +148,28 @@ exports.registerStudent = async (req, res) => {
   }
 };
 
+exports.adminRegisterStudent = async (req, res) => {
+  try {
+    const { firstName, lastName, username, password, isActive } = req.body;
+    const existingStudent = await Student.findOne({ username });
+    if (existingStudent) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const student = new Student({
+      firstName,
+      lastName,
+      username,
+      password: hashedPassword,
+    });
+    await student.save();
+    return res.status(201).json({ data: student });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 exports.loginStudent = async (req, res) => {
   try {
     const { username, password } = req.body;

@@ -6,6 +6,7 @@ const studentRouter = Router();
 
 studentRouter.post("/login", studentController.loginStudent);
 studentRouter.post("/register", studentController.registerStudent);
+studentRouter.post("/admin/register", authenticate, requireRole(["admin"]), studentController.adminRegisterStudent);
 
 studentRouter.get("/", authenticate, requireRole(["admin"]), studentController.getAllStudents);
 studentRouter.get("/me", authenticate, requireRole(["student"]), studentController.getMeStudent);
