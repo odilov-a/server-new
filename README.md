@@ -1,5 +1,5 @@
 !readme
-python to python3
+in production mode : python to python3
 
 ```javascipt
 exports.registerStudent = async (req, res) => {

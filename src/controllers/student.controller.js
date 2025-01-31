@@ -50,6 +50,8 @@ exports.getMeStudent = async (req, res) => {
     if (student.isActive === false) {
       return res.status(401).json({ message: "Account is not active" });
     }
+    student.lastLogin = new Date();
+    await student.save();
     return res.status(200).json({
       data: {
         username: student.username,
