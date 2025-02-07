@@ -1,8 +1,9 @@
 const { Router } = require("express");
 const testController = require("../controllers/test.controller.js");
-const { requestLogger } = require("../../../src/middlewares/request.middleware.js");
+const { authenticate } = require("../../../src/middlewares/auth.middleware.js");
+const { requireRole } = require("../../../src/middlewares/role.middleware.js");
 const testRoutes = Router();
 
-testRoutes.post("/upload", requestLogger, testController.upload);
+testRoutes.post("/upload", authenticate, requireRole(["admin", "student", "teacher"]), testController.upload);
 
 module.exports = testRoutes;
