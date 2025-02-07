@@ -1,7 +1,20 @@
-const Files = require("../models/File.js");
 const path = require("path");
 const multer = require("multer");
 const mongoose = require("mongoose");
+const Files = require("../models/File.js");
+
+const fileFilter = (req, file, cb) => {
+  const allowedExtensions = [".jpg", ".jpeg", ".png"];
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+  if (allowedExtensions.includes(fileExtension)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error("Invalid file type. Only .jpg, .jpeg, and .png are allowed."),
+      false
+    );
+  }
+};
 
 exports.upload = async (req, res) => {
   try {
@@ -15,10 +28,15 @@ exports.upload = async (req, res) => {
         cb(null, fileName);
       },
     });
-    const upload = multer({ storage }).single("file");
+
+    const upload = multer({
+      storage,
+      fileFilter,
+    }).single("file");
+
     upload(req, res, async (error) => {
       if (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(400).json({ message: error.message });
       }
       if (!req.file) {
         return res.status(400).json({ message: "File not found" });
