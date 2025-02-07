@@ -152,7 +152,7 @@ exports.registerStudent = async (req, res) => {
 
 exports.adminRegisterStudent = async (req, res) => {
   try {
-    const { firstName, lastName, username, password, isActive } = req.body;
+    const { firstName, lastName, username, password } = req.body;
     const existingStudent = await Student.findOne({ username });
     if (existingStudent) {
       return res.status(400).json({ message: "Username already exists" });
