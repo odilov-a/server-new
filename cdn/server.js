@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 dotenv.config();
 require("../src/connection.js");
-const routes = require("./src/routes/router.js");
+const router = require("./src/routes/router.js");
 const { requestLogger } = require("../src/middlewares/request.middleware.js");
 const PORT = 5001;
 
@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(requestLogger);
-app.use("/api", routes);
+app.use("/api", router);
 app.use("/uploads", express.static("uploads"));
 app.use("/tests", express.static("tests"));
 app.get("/", (req, res) => {

@@ -4,11 +4,15 @@ const mongoose = require("mongoose");
 const Test = require("../models/Test.js");
 
 const fileFilter = (req, file, cb) => {
+  const allowedExtensions = [".txt"];
   const fileExtension = path.extname(file.originalname).toLowerCase();
-  if (fileExtension === ".txt") {
+  if (allowedExtensions.includes(fileExtension)) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only .txt files are allowed."), false);
+    cb(
+      new Error("Invalid file type. Only .txt are allowed."),
+      false
+    );
   }
 };
 

@@ -6,7 +6,7 @@ dotenv.config();
 require("./src/backup.js");
 require("./src/connection.js");
 
-const routes = require("./src/routes/router.js");
+const router = require("./src/routes/router.js");
 const { requestLogger } = require("./src/middlewares/request.middleware.js");
 const PORT = 5000;
 
@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(cors());
 app.use(mongoSanitize());
 app.use(requestLogger);
-app.use("/api", routes);
+app.use("/api", router);
 
 app.get("/", (req, res) => {
   return res.json({ message: "API server is running!" });
