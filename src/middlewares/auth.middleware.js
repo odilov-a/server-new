@@ -5,7 +5,6 @@ exports.authenticate = (req, res, next) => {
   if (!token) {
     return res.status(401).json({ message: "Token not found" });
   }
-
   try {
     const decoded = verify(token);
     switch (decoded.role) {
