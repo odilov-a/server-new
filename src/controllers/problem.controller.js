@@ -156,7 +156,8 @@ exports.updateProblem = async (req, res) => {
   try {
     const problem = await Problem.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-    }).lean();
+      runValidators: true,
+    });
     if (!problem) {
       return res.status(404).json({ message: "Problem not found" });
     }
