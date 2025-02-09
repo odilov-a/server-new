@@ -1,21 +1,18 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const SECRET = process.env.JWT_SECRET;
 
-exports.sign = (payload) => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET is not defined in the environment variables");
-  }
-  return jwt.sign(payload, secret, { expiresIn: "30d" });
+if (!SECRET) {
+  throw new Error("JWT_SECRET is not defined in the environment variables");
+}
+
+exports.sign = (payload, options = {}) => {
+  return jwt.sign(payload, SECRET, { expiresIn: "3d", ...options });
 };
 
 exports.verify = (token) => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET is not defined in the environment variables");
-  }
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, SECRET);
   } catch (error) {
     throw new Error("Token verification failed");
   }
