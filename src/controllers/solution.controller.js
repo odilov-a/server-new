@@ -8,9 +8,7 @@ const Student = require("../models/Student.js");
 const Attempt = require("../models/Attempt.js");
 
 const execAsync = util.promisify(exec);
-
 const stripAnsi = (str) => str.replace(/\x1b\[[0-9;]*m/g, "").trim();
-
 const executeCode = async (
   fileName,
   command,
@@ -115,10 +113,11 @@ exports.checkSolution = async (req, res) => {
 
     const timestamp = Date.now();
     let fileName, command;
+    const testDir = path.join(__dirname, "../tests");
     switch (language.toLowerCase()) {
       case "python":
         fileName = `${timestamp}.py`;
-        command = `python ${path.join(__dirname, "../tests", fileName)}`;
+        command = `python ${path.join(testDir, fileName)}`;
         break;
       case "java":
         fileName = `Solution.java`;
@@ -126,34 +125,26 @@ exports.checkSolution = async (req, res) => {
           /public\s+class\s+\w+/g,
           "public class Solution"
         );
-        await fs.writeFile(
-          path.join(__dirname, "../tests", fileName),
-          updatedJavaCode,
-          { encoding: "utf8" }
-        );
+        await fs.writeFile(path.join(testDir, fileName), updatedJavaCode, {
+          encoding: "utf8",
+        });
         command = `javac ${path.join(
-          __dirname,
-          "../tests",
+          testDir,
           fileName
-        )} && java -cp ${path.join(__dirname, "../tests")} Solution`;
+        )} && java -cp ${testDir} Solution`;
         break;
       case "javascript":
         fileName = `${timestamp}.js`;
-        command = `node ${path.join(__dirname, "../tests", fileName)}`;
+        command = `node ${path.join(testDir, fileName)}`;
         break;
       case "cpp":
       case "c++":
         fileName = `${timestamp}.cpp`;
         const outputFileName = `${timestamp}.exe`;
-        command = `g++ ${path.join(
-          __dirname,
-          "../tests",
-          fileName
-        )} -o ${path.join(
-          __dirname,
-          "../tests",
+        command = `g++ ${path.join(testDir, fileName)} -o ${path.join(
+          testDir,
           outputFileName
-        )} && ${path.join(__dirname, "../tests", outputFileName)}`;
+        )} && ${path.join(testDir, outputFileName)}`;
         break;
       default:
         return res.status(400).json({
@@ -166,16 +157,8 @@ exports.checkSolution = async (req, res) => {
     let failedTestCaseIndex = null;
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
-      const inputFilePath = path.join(
-        __dirname,
-        "../tests",
-        `input_${timestamp}.txt`
-      );
-      const outputFilePath = path.join(
-        __dirname,
-        "../tests",
-        `output_${timestamp}.txt`
-      );
+      const inputFilePath = path.join(testDir, `input_${timestamp}.txt`);
+      const outputFilePath = path.join(testDir, `output_${timestamp}.txt`);
       await downloadFile(testCase.inputFileUrl, inputFilePath);
       await downloadFile(testCase.outputFileUrl, outputFilePath);
       const input = await fs.readFile(inputFilePath, "utf-8");
@@ -190,7 +173,6 @@ exports.checkSolution = async (req, res) => {
         memoryLimit
       );
       if (!result.isCorrect) {
-        console.log(`Test case ${i + 1} failed.`);
         allCorrect = false;
         failedTestCaseIndex = i + 1;
         break;
@@ -227,7 +209,7 @@ exports.checkSolution = async (req, res) => {
     }
     student.history.push(problem._id);
     await student.save();
-    await fs.unlink(path.join(__dirname, "../tests", fileName));
+    await fs.unlink(path.join(testDir, fileName));
     return res.json({
       data: {
         correct: allCorrect,
@@ -255,37 +237,32 @@ exports.testRunCode = async (req, res) => {
     }
     const timestamp = Date.now();
     let fileName, command, className;
+    const testDir = path.join(__dirname, "../tests");
     switch (language.toLowerCase()) {
       case "python":
         fileName = `${timestamp}.py`;
-        command = `python ${path.join(__dirname, "../tests", fileName)}`;
+        command = `python ${path.join(testDir, fileName)}`;
         break;
       case "java":
         fileName = `${timestamp}.java`;
         className = code.match(/class\s+(\w+)/)[1];
         command = `javac ${path.join(
-          __dirname,
-          "../tests",
+          testDir,
           fileName
-        )} && java -cp ${path.join(__dirname, "../tests")} ${className}`;
+        )} && java -cp ${testDir} ${className}`;
         break;
       case "javascript":
         fileName = `${timestamp}.js`;
-        command = `node ${path.join(__dirname, "../tests", fileName)}`;
+        command = `node ${path.join(testDir, fileName)}`;
         break;
       case "cpp":
       case "c++":
         fileName = `${timestamp}.cpp`;
         const outputFileName = `${timestamp}.exe`;
-        command = `g++ ${path.join(
-          __dirname,
-          "../tests",
-          fileName
-        )} -o ${path.join(
-          __dirname,
-          "../tests",
+        command = `g++ ${path.join(testDir, fileName)} -o ${path.join(
+          testDir,
           outputFileName
-        )} && ${path.join(__dirname, "../tests", outputFileName)}`;
+        )} && ${path.join(testDir, outputFileName)}`;
         break;
       default:
         return res.status(400).json({
@@ -293,8 +270,8 @@ exports.testRunCode = async (req, res) => {
           message: "Invalid language",
         });
     }
-    const filePath = path.join(__dirname, "../tests", fileName);
-    fs.writeFileSync(filePath, code, { encoding: "utf8" });
+    const filePath = path.join(testDir, fileName);
+    await fs.writeFile(filePath, code, { encoding: "utf8" });
     const result = await new Promise((resolve) => {
       exec(command, { timeout: 5000 }, (error, stdout, stderr) => {
         if (error) {
@@ -311,7 +288,7 @@ exports.testRunCode = async (req, res) => {
         }
       });
     });
-    fs.unlinkSync(filePath);
+    await fs.unlink(filePath);
     return res.json({ data: result });
   } catch (error) {
     return res.status(500).json({
