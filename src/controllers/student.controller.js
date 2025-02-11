@@ -85,7 +85,7 @@ exports.getTopStudentsByBalance = async (req, res) => {
   try {
     const students = await Student.find()
       .sort({ balance: -1 })
-      .select("balance firstName lastName username");
+      .select("balance firstName lastName username -_id");
     return res.json({ data: students });
   } catch (error) {
     return res.status(500).json({ error: error.message });
