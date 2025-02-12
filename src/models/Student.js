@@ -18,7 +18,6 @@ const studentSchema = new Schema(
     },
     email: {
       type: String,
-      unique: [true, "Email already exists"],
     },
     balance: {
       type: Number,
