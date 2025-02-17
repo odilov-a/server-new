@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const testRoutes = require("./test.routes.js");
+const questionRoutes = require("./question.routes.js");
 const adminRoutes = require("./admin.routes.js");
 const studentRoutes = require("./student.routes.js");
 const subjectRoutes = require("./subject.routes.js");
@@ -11,12 +11,12 @@ const difficultyRoutes = require("./difficulty.routes.js");
 const translationRoutes = require("./translation.routes.js");
 const router = Router();
 
-router.use("/tests", testRoutes);
 router.use("/admins", adminRoutes);
 router.use("/students", studentRoutes);
 router.use("/problems", problemRoutes);
 router.use("/subjects", subjectRoutes);
 router.use("/teachers", teacherRoutes);
+router.use("/questions", questionRoutes);
 router.use("/feedbacks", feedbackRoutes);
 router.use("/statistics", statisticsRoutes);
 router.use("/difficulties", difficultyRoutes);

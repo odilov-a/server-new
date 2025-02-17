@@ -1,11 +1,11 @@
-const { model, Schema, Types } = require('mongoose');
-
+const { model, Schema, Types } = require("mongoose");
 const testSchema = new Schema({
   name: {
     type: String,
   },
   subject: {
-    ref: 'Subject',
+    required: true,
+    ref: "subjects",
     type: Types.ObjectId,
   },
   createdAt: {
@@ -14,6 +14,5 @@ const testSchema = new Schema({
   },
 });
 
-const Test = model('Test', testSchema);
-
+const Test = model("nameTest", testSchema);
 module.exports = Test;
