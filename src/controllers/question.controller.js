@@ -1,16 +1,16 @@
 const Test = require("../models/Test.js");
 const Question = require("../models/Question.js");
 
-exports.getAll = async (req, res) => {
+exports.getAllQuestion = async (req, res) => {
   try {
-    const tests = await Question.find();
-    return res.json({ data: tests });
+    const questions = await Question.find();
+    return res.json({ data: questions });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-exports.create = async (req, res) => {
+exports.createQuestion = async (req, res) => {
   try {
     const test = await Test.create({
       name: req.body.name,
@@ -44,27 +44,24 @@ exports.checkAnswers = async (req, res) => {
   }
 };
 
-exports.update = async (req, res) => {
+exports.updateQuestion = async (req, res) => {
   try {
     const test = await Test.findByIdAndUpdate(req.params.id, req.body);
-
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
-
     if(req.body.questions) {
       for (const question of req.body.questions) {
         await Question.findByIdAndUpdate(question._id, question);
       }
     }
-
     return res.json({ data: test });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-exports.delete = async (req, res) => {
+exports.deleteQuestion = async (req, res) => {
   try {
     const test = await Test.findByIdAndDelete(req.params.id);
     if (test) {

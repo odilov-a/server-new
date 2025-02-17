@@ -1,11 +1,13 @@
 const { Router } = require("express");
 const questionController = require("../controllers/question.controller.js");
-
+const { authenticate } = require("../middlewares/auth.middleware.js");
+const { requireRole } = require("../middlewares/role.middleware.js");
 const questionRoutes = Router();
 
-questionRoutes.get("/", questionController.getAll);
-questionRoutes.post("/", questionController.create);
-questionRoutes.put("/:id", questionController.update);
-questionRoutes.post("/check/:id", questionController.checkAnswers);
+questionRoutes.get("/", authenticate, requireRole(["admin", "teacher", "student"]), questionController.getAllQuestion);
+questionRoutes.post("/", authenticate, requireRole(["admin", "teacher"]), questionController.createQuestion);
+questionRoutes.put("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.updateQuestion);
+questionRoutes.put("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.deleteQuestion);
+questionRoutes.post("/check/:id", authenticate, requireRole(["admin", "student", "teacher"]), questionController.checkAnswers);
 
 module.exports = questionRoutes;
