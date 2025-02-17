@@ -5,7 +5,7 @@ const questionRoutes = Router();
 
 questionRoutes.get("/", questionController.getAll);
 questionRoutes.post("/", questionController.create);
-questionRoutes.post("/import", questionController.createWithFolder);
+questionRoutes.put("/:id", questionController.update);
 questionRoutes.post("/check/:id", questionController.checkAnswers);
 
 module.exports = questionRoutes;

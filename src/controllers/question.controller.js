@@ -1,6 +1,3 @@
-const fs = require("fs");
-const path = require("path");
-const mammoth = require("mammoth");
 const Test = require("../models/Test.js");
 const Question = require("../models/Question.js");
 
@@ -8,64 +5,6 @@ exports.getAll = async (req, res) => {
   try {
     const tests = await Question.find();
     return res.json({ data: tests });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-exports.createWithFolder = async (req, res) => {
-  try {
-    const filePath = path.join(__dirname, "../../uploads", req.body.filename);
-    if (!fs.existsSync(filePath)) {
-      return res.status(400).json({ message: "Fayl topilmadi" });
-    }
-    const data = await fs.promises.readFile(filePath);
-    const result = await mammoth.extractRawText({ buffer: data });
-    const lines = result.value
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line);
-    let questions = [];
-    let currentQuestion = null;
-    lines.forEach((line) => {
-      if (line.startsWith("? ")) {
-        if (currentQuestion) {
-          questions.push(currentQuestion);
-        }
-        currentQuestion = {
-          title: line.slice(2).trim(),
-          answers: [],
-        };
-      } else if (line.startsWith("@ ")) {
-        if (currentQuestion) {
-          currentQuestion.answers.push({
-            answer: line.slice(2).trim(),
-            isCorrect: true,
-          });
-        }
-      } else if (line.startsWith("! ")) {
-        if (currentQuestion) {
-          currentQuestion.answers.push({
-            answer: line.slice(2).trim(),
-            isCorrect: false,
-          });
-        }
-      }
-    });
-    if (currentQuestion) {
-      questions.push(currentQuestion);
-    }
-    const test = await Test.create({
-      name: lines[0],
-      subject: req.body.subject,
-    });
-    const savedQuestions = await Question.insertMany(
-      questions.map((q) => ({ ...q, test: test._id }))
-    );
-    return res.json({
-      message: `${savedQuestions.length} ta savol saqlandi`,
-      test,
-    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -100,6 +39,26 @@ exports.checkAnswers = async (req, res) => {
       return acc;
     }, {});
     return res.json({ data: result });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const test = await Test.findByIdAndUpdate(req.params.id, req.body);
+
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+
+    if(req.body.questions) {
+      for (const question of req.body.questions) {
+        await Question.findByIdAndUpdate(question._id, question);
+      }
+    }
+
+    return res.json({ data: test });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

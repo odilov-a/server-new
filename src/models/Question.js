@@ -15,7 +15,7 @@ const questionSchema = new Schema({
   ],
   test: {
     type: Schema.Types.ObjectId,
-    ref: "Test",
+    ref: "nameTest",
   },
 });
 
