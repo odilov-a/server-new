@@ -15,6 +15,7 @@ exports.create = async (req, res) => {
     const test = await Test.create({
       name: req.body.name,
       subject: req.body.subject,
+      point: req.body.point,
     });
     await Question.insertMany(
       req.body.questions.map((q) => ({ ...q, test: test._id }))
@@ -27,6 +28,8 @@ exports.create = async (req, res) => {
 
 exports.checkAnswers = async (req, res) => {
   try {
+    const findTest = await Test.findById(req.params.id);
+
     const questions = await Question.find({ test: req.params.id });
     const correctAnswers = questions.reduce((acc, q) => {
       acc[q._id] = q.answers.filter((a) => a.isCorrect).map((a) => a.answer);
@@ -35,10 +38,18 @@ exports.checkAnswers = async (req, res) => {
     const result = req.body.reduce((acc, answer) => {
       const correct = correctAnswers[answer.question].includes(answer.answer);
       acc[answer.question] = correct;
-      acc.correct = correctAnswers[answer.question][0];
       return acc;
     }, {});
-    return res.json({ data: result });
+
+    const total = Object.keys(result).length;
+    const correct = Object.values(result).filter(value => value).length;
+    const percentage = (correct / total) * 100;
+
+    return res.json({ 
+      data: result,
+      correctPercentage: percentage,
+      point: percentage > 75 ? findTest.point : 0,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

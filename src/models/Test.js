@@ -8,6 +8,9 @@ const testSchema = new Schema({
     ref: "subjects",
     type: Types.ObjectId,
   },
+  point: {
+    type: Number
+  },
   createdAt: {
     type: Date,
     default: Date.now,
