@@ -9,7 +9,7 @@ const testSchema = new Schema({
     type: Types.ObjectId,
   },
   point: {
-    type: Number
+    type: Number,
   },
   createdAt: {
     type: Date,

@@ -42,10 +42,10 @@ exports.checkAnswers = async (req, res) => {
     }, {});
 
     const total = Object.keys(result).length;
-    const correct = Object.values(result).filter(value => value).length;
+    const correct = Object.values(result).filter((value) => value).length;
     const percentage = (correct / total) * 100;
 
-    return res.json({ 
+    return res.json({
       data: result,
       correctPercentage: percentage,
       point: percentage > 75 ? findTest.point : 0,
@@ -61,7 +61,7 @@ exports.updateQuestion = async (req, res) => {
     if (!test) {
       return res.status(404).json({ message: "Test not found" });
     }
-    if(req.body.questions) {
+    if (req.body.questions) {
       for (const question of req.body.questions) {
         await Question.findByIdAndUpdate(question._id, question);
       }
