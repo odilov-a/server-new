@@ -8,7 +8,13 @@ const Student = require("../models/Student.js");
 const Attempt = require("../models/Attempt.js");
 
 const execAsync = util.promisify(exec);
-const stripAnsi = (str) => str.replace(/\x1b\[[0-9;]*m/g, "").trim();
+const stripAnsi = (str) => {
+  if (typeof str !== "string") {
+    return "";
+  }
+  return str.replace(/\x1b\[[0-9;]*m/g, "").trim();
+};
+
 const executeCode = async (
   fileName,
   command,
@@ -47,6 +53,7 @@ const executeCode = async (
       if (heapUsedMB > memoryLimit) {
         clearInterval(memoryCheckInterval);
         child.kill("SIGKILL");
+        console.log("Memory limit exceeded:", heapUsedMB, "MB");
         resolve({
           actualOutput: null,
           isCorrect: false,
@@ -56,15 +63,6 @@ const executeCode = async (
     }, 100);
     child.on("exit", () => clearInterval(memoryCheckInterval));
   });
-};
-
-const downloadFile = async (url, filepath) => {
-  try {
-    const response = await axios.get(url, { responseType: "arraybuffer" });
-    await fs.writeFile(filepath, Buffer.from(response.data));
-  } catch (error) {
-    throw new Error("Invalid URL");
-  }
 };
 
 const extractErrorMessage = (errorOutput) => {
@@ -157,12 +155,12 @@ exports.checkSolution = async (req, res) => {
     let failedTestCaseIndex = null;
     for (let i = 0; i < testCases.length; i++) {
       const testCase = testCases[i];
-      const inputFilePath = path.join(testDir, `input_${timestamp}.txt`);
-      const outputFilePath = path.join(testDir, `output_${timestamp}.txt`);
-      await downloadFile(testCase.inputFileUrl, inputFilePath);
-      await downloadFile(testCase.outputFileUrl, outputFilePath);
-      const input = await fs.readFile(inputFilePath, "utf-8");
-      const expectedOutput = await fs.readFile(outputFilePath, "utf-8");
+      const input = await axios
+        .get(testCase.inputFileUrl, { responseType: "text" })
+        .then((res) => res.data);
+      const expectedOutput = await axios
+        .get(testCase.outputFileUrl, { responseType: "text" })
+        .then((res) => res.data);
       const result = await executeCode(
         fileName,
         command,
@@ -177,8 +175,6 @@ exports.checkSolution = async (req, res) => {
         failedTestCaseIndex = i + 1;
         break;
       }
-      await fs.unlink(inputFilePath);
-      await fs.unlink(outputFilePath);
     }
 
     const attempt = new Attempt({
