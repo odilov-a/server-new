@@ -1,10 +1,12 @@
 const { Router } = require("express");
-const questionRoutes = require("./question.routes.js");
+const orderRoutes = require("./order.routes.js");
 const adminRoutes = require("./admin.routes.js");
+const questionRoutes = require("./test.routes.js");
 const studentRoutes = require("./student.routes.js");
 const subjectRoutes = require("./subject.routes.js");
 const problemRoutes = require("./problem.routes.js");
 const teacherRoutes = require("./teacher.routes.js");
+const productRoutes = require("./product.routes.js");
 const feedbackRoutes = require("./feedback.routes.js");
 const statisticsRoutes = require("./statistics.routes.js");
 const difficultyRoutes = require("./difficulty.routes.js");
@@ -12,11 +14,13 @@ const translationRoutes = require("./translation.routes.js");
 const router = Router();
 
 router.use("/admins", adminRoutes);
+router.use("/orders", orderRoutes);
+router.use("/tests", questionRoutes);
 router.use("/students", studentRoutes);
 router.use("/problems", problemRoutes);
 router.use("/subjects", subjectRoutes);
 router.use("/teachers", teacherRoutes);
-router.use("/questions", questionRoutes);
+router.use("/products", productRoutes);
 router.use("/feedbacks", feedbackRoutes);
 router.use("/statistics", statisticsRoutes);
 router.use("/difficulties", difficultyRoutes);

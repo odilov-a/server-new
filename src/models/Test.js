@@ -1,6 +1,12 @@
 const { model, Schema, Types } = require("mongoose");
 const testSchema = new Schema({
-  name: {
+  nameUz: {
+    type: String,
+  },
+  nameRu: {
+    type: String,
+  },
+  nameEn: {
     type: String,
   },
   subject: {

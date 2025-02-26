@@ -1,20 +1,35 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema, Types } = require("mongoose");
 const questionSchema = new Schema({
-  title: {
+  titleUz: {
     type: String,
     required: true,
   },
+  titleRu: {
+    type: String,
+    required: true,
+  },
+  titleEn: {
+    type: String,
+    required: true,
+  },
+  type: {
+    type: Number,
+  },
+  files: {
+    type: Array,
+  },
   answers: [
     {
-      answer: String,
+      answerUz: String,
+      answerRu: String,
+      answerEn: String,
       isCorrect: {
         type: Boolean,
-        default: false,
       },
     },
   ],
   test: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: "nameTest",
   },
 });

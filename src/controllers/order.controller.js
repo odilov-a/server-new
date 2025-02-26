@@ -1,5 +1,5 @@
-const Order = require("../models/order");
-const User = require("../models/student");
+const Order = require("../models/Order");
+const User = require("../models/Student");
 
 exports.getAllOrders = async (req, res) => {
   try {
@@ -14,7 +14,7 @@ exports.getAllOrders = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
   try {
-    const studentId = req.student.id;
+    const studentId = req.userId;
     const { total, products } = req.body;
     const findStudent = await User.findById(studentId);
     if (!findStudent) {
