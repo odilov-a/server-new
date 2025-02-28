@@ -21,6 +21,14 @@ const testSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  teacher: {
+    type: Types.ObjectId,
+    ref: "teacher"
+  },
+  admin: {
+    type: Types.ObjectId,
+    ref: "admin"
+  }
 });
 
 const Test = model("nameTest", testSchema);

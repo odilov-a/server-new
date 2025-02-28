@@ -1,5 +1,6 @@
 const Test = require("../models/Test.js");
 const User = require("../models/Student.js");
+const Passed = require("../models/Passed.js");
 const Question = require("../models/Question.js");
 
 exports.getAllTest = async (req, res) => {
@@ -22,6 +23,12 @@ exports.getTestQuestions = async (req, res) => {
 
 exports.createTest = async (req, res) => {
   try {
+    const adminId = req.admin?.id
+    const teacherId = req.teacher?.id
+
+    if(adminId) req.body.admin = adminId
+    if(teacherId) req.body.teacher = teacherId
+
     const test = await Test.create({ ...req.body });
     await Question.insertMany(
       req.body.questions.map((q) => ({ ...q, test: test._id }))
@@ -35,29 +42,63 @@ exports.createTest = async (req, res) => {
 exports.checkAnswers = async (req, res) => {
   try {
     const questions = await Question.find({ test: req.params.id });
-
     let correctAnswers = 0;
+    let totalTestQuestions = 0;
 
-    for (answer of req.body.answers) {
-      const correctAnswer = questions.find(q => q._id == answer.question).answers.find(i => i.isCorrect == true)._id.toString();
-      if (correctAnswer == answer.answer) correctAnswers++;
-    }
+    const userAnswers = req.body.answers.map((answer) => {
+      const question = questions.find((q) => q._id.toString() === answer.question);
+      if (!question) return null;
 
-    const percentage = correctAnswers / questions.length * 100;
+      let isCorrect = false;
+      let correctAnswer = null;
+      let selectedAnswer = null;
+      let description = null;
 
-    if (percentage > 75) {
+      if (question.type === 1) {
+        correctAnswer = question.answers.find(i => i.isCorrect);
+        selectedAnswer = question.answers.find(i => i._id.toString() === answer.answer);
+
+        isCorrect = correctAnswer._id === selectedAnswer._id
+        totalTestQuestions++;
+      } else if (question.type === 2) {
+        description = answer.answer?.trim() || "";
+      }
+
+      if (isCorrect) correctAnswers++;
+      
+      return {
+        question: question._id,
+        selectedAnswer: question.type === 1 ? selectedAnswer : null,
+        correctAnswer: question.type === 1 ? correctAnswer : null,
+        description,
+      };
+    }).filter(ans => ans !== null);
+    
+    const percentage = totalTestQuestions > 0 ? (correctAnswers / totalTestQuestions) * 100 : 0;
+    let earnedPoints = 0;
+    
+    if (percentage >= 75) {
       const findTest = await Test.findById(req.params.id);
       const findUser = await User.findById(req.userId);
       findUser.balance += findTest.point;
+      await findUser.save();
+      earnedPoints = findTest.point;
     }
-
+    
+    const passedTest = new Passed({
+      user: req.userId,
+      test: req.params.id,
+      answers: userAnswers,
+    });
+    await passedTest.save();
+    
     return res.json({
       message: percentage >= 75 ? "Congratulations! You passed the test" : "Sorry! You failed the test",
       percentage,
       correctAnswers,
-      totalQuestions: questions.length,
+      totalQuestions: totalTestQuestions,
+      earnedPoints,
     });
-
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
