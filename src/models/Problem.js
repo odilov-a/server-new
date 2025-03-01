@@ -43,7 +43,7 @@ const problemSchema = new Schema(
           type: String,
           required: true,
         },
-      }
+      },
     ],
     timeLimit: {
       type: Number,
