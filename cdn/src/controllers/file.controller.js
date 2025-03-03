@@ -43,7 +43,7 @@ exports.upload = async (req, res) => {
       }
       const newFile = new Files({
         fileName: req.file.filename,
-        fileUrl: `http://localhost:5001/uploads/${req.file.filename}`,
+        fileUrl: `${process.env.FILE_UPLOAD_GET_URL}/uploads/${req.file.filename}`,
       });
       await newFile.save();
       return res.status(200).json({ data: newFile });
