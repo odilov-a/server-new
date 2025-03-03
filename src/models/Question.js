@@ -15,9 +15,11 @@ const questionSchema = new Schema({
   type: {
     type: Number,
   },
-  files: {
-    type: Array,
-  },
+  photoUrl: [
+    {
+      type: String,
+    },
+  ],
   answers: [
     {
       answerUz: String,
