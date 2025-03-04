@@ -14,8 +14,11 @@ exports.getAllTest = async (req, res) => {
 
 exports.getTestQuestions = async (req, res) => {
   try {
+    const findTest = await Test.findById(req.params.id).lean().populate("subject")
+    if (!findTest) return res.status(404).json({ message: "Test not found" });
     const questions = await Question.find({ test: req.params.id });
-    return res.json({ data: questions });
+    findTest.questions = questions
+    return res.json({ data: findTest });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -112,7 +115,7 @@ exports.updateTest = async (req, res) => {
     }
     if (req.body.questions) {
       for (const question of req.body.questions) {
-        await Question.findByIdAndUpdate(question._id, question);
+        await Question.findByIdAndUpdate(question._id, { ...question });
       }
     }
     return res.json({ data: test });

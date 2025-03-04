@@ -49,7 +49,7 @@ exports.getAllProblems = async (req, res) => {
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result.reverse() });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -63,7 +63,7 @@ exports.getProblemById = async (req, res) => {
     }
     return res.json({ data: formatProblem(problem, req.query.lang || "en") });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -80,7 +80,7 @@ exports.getAllProblemsByTeacher = async (req, res) => {
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result.reverse() });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -93,7 +93,7 @@ exports.getAllProblemsByDifficulty = async (req, res) => {
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -106,7 +106,7 @@ exports.getProblemsBySubject = async (req, res) => {
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -129,7 +129,7 @@ exports.searchProblems = async (req, res) => {
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -148,7 +148,7 @@ exports.createProblem = async (req, res) => {
     await newProblem.save();
     return res.status(201).json({ data: newProblem });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -163,7 +163,7 @@ exports.updateProblem = async (req, res) => {
     }
     return res.status(200).json({ data: problem });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -175,6 +175,6 @@ exports.deleteProblem = async (req, res) => {
     }
     return res.json({ data: problem });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
