@@ -3,34 +3,81 @@ const User = require("../models/Student.js");
 const Passed = require("../models/Passed.js");
 const Question = require("../models/Question.js");
 
+const getLanguageField = (lang) => {
+  switch (lang) {
+    case "uz":
+      return "nameUz";
+    case "ru":
+      return "nameRu";
+    case "en":
+      return "nameEn";
+    default:
+      return null;
+  }
+};
+
+const getSubjectTitle = (subject, lang) => {
+  if (!subject) return null;
+  switch (lang) {
+    case "uz":
+      return subject.titleUz;
+    case "ru":
+      return subject.titleRu;
+    case "en":
+      return subject.titleEn;
+    default:
+      return null;
+  }
+};
+
 exports.getAllTest = async (req, res) => {
   try {
-    const tests = await Test.find(req.query.filter || {});
-    return res.json({ data: tests });
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+    const { lang } = req.query;
+    const fieldName = getLanguageField(lang);
+    if (lang && !fieldName) {
+      return res.status(400).json({ message: "Invalid language request" });
+    }
+    const tests = await Test.find(req.query.filter || {})
+      .populate("subject")
+      .lean();
+    const result = tests.map((test) => {
+      return {
+        _id: test._id,
+        nameUz: test.nameUz,
+        nameRu: test.nameRu,
+        nameEn: test.nameEn,
+        name: fieldName ? test[fieldName] : undefined,
+        point: test.point,
+        subject: getSubjectTitle(test.subject, lang),
+      };
+    });
+    return res.json({ data: result });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 
 exports.getTestQuestions = async (req, res) => {
   try {
-    const findTest = await Test.findById(req.params.id).lean().populate("subject")
+    const findTest = await Test.findById(req.params.id)
+      .lean()
+      .populate("subject");
     if (!findTest) return res.status(404).json({ message: "Test not found" });
     const questions = await Question.find({ test: req.params.id });
-    findTest.questions = questions
+    findTest.questions = questions;
     return res.json({ data: findTest });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-}
+};
 
 exports.createTest = async (req, res) => {
   try {
-    const adminId = req.admin?.id
-    const teacherId = req.teacher?.id
+    const adminId = req.admin?.id;
+    const teacherId = req.teacher?.id;
 
-    if(adminId) req.body.admin = adminId
-    if(teacherId) req.body.teacher = teacherId
+    if (adminId) req.body.admin = adminId;
+    if (teacherId) req.body.teacher = teacherId;
 
     const test = await Test.create({ ...req.body });
     await Question.insertMany(
@@ -48,38 +95,45 @@ exports.checkAnswers = async (req, res) => {
     let correctAnswers = 0;
     let totalTestQuestions = 0;
 
-    const userAnswers = req.body.answers.map((answer) => {
-      const question = questions.find((q) => q._id.toString() === answer.question);
-      if (!question) return null;
+    const userAnswers = req.body.answers
+      .map((answer) => {
+        const question = questions.find(
+          (q) => q._id.toString() === answer.question
+        );
+        if (!question) return null;
 
-      let isCorrect = false;
-      let correctAnswer = null;
-      let selectedAnswer = null;
-      let description = null;
+        let isCorrect = false;
+        let correctAnswer = null;
+        let selectedAnswer = null;
+        let description = null;
 
-      if (question.type === 1) {
-        correctAnswer = question.answers.find(i => i.isCorrect);
-        selectedAnswer = question.answers.find(i => i._id.toString() === answer.answer);
+        if (question.type === 1) {
+          correctAnswer = question.answers.find((i) => i.isCorrect);
+          selectedAnswer = question.answers.find(
+            (i) => i._id.toString() === answer.answer
+          );
 
-        isCorrect = correctAnswer._id === selectedAnswer._id
-        totalTestQuestions++;
-      } else if (question.type === 2) {
-        description = answer.answer?.trim() || "";
-      }
+          isCorrect = correctAnswer._id === selectedAnswer._id;
+          totalTestQuestions++;
+        } else if (question.type === 2) {
+          description = answer.answer?.trim() || "";
+        }
 
-      if (isCorrect) correctAnswers++;
-      
-      return {
-        question: question._id,
-        selectedAnswer: question.type === 1 ? selectedAnswer : null,
-        correctAnswer: question.type === 1 ? correctAnswer : null,
-        description,
-      };
-    }).filter(ans => ans !== null);
-    
-    const percentage = totalTestQuestions > 0 ? (correctAnswers / totalTestQuestions) * 100 : 0;
+        if (isCorrect) correctAnswers++;
+
+        return {
+          question: question._id,
+          selectedAnswer: question.type === 1 ? selectedAnswer : null,
+          correctAnswer: question.type === 1 ? correctAnswer : null,
+          description,
+        };
+      })
+      .filter((ans) => ans !== null);
+
+    const percentage =
+      totalTestQuestions > 0 ? (correctAnswers / totalTestQuestions) * 100 : 0;
     let earnedPoints = 0;
-    
+
     if (percentage >= 75) {
       const findTest = await Test.findById(req.params.id);
       const findUser = await User.findById(req.userId);
@@ -87,16 +141,19 @@ exports.checkAnswers = async (req, res) => {
       await findUser.save();
       earnedPoints = findTest.point;
     }
-    
+
     const passedTest = new Passed({
       user: req.userId,
       test: req.params.id,
       answers: userAnswers,
     });
     await passedTest.save();
-    
+
     return res.json({
-      message: percentage >= 75 ? "Congratulations! You passed the test" : "Sorry! You failed the test",
+      message:
+        percentage >= 75
+          ? "Congratulations! You passed the test"
+          : "Sorry! You failed the test",
       percentage,
       correctAnswers,
       totalQuestions: totalTestQuestions,

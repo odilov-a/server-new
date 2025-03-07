@@ -13,6 +13,11 @@ const resourceSchema = new Schema(
       type: String,
       required: true,
     },
+    subject: {
+      type: Types.ObjectId,
+      ref: "subjects",
+      index: true,
+    },
     resources: [
       {
         type: String,

@@ -9,7 +9,7 @@ questionRoutes.get("/test/:id", authenticate, requireRole(["admin", "teacher", "
 questionRoutes.post("/", authenticate, requireRole(["admin", "teacher"]), questionController.createTest);
 questionRoutes.post("/check/:id", authenticate, requireRole(["admin", "teacher", "student"]), questionController.checkAnswers);
 questionRoutes.put("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.updateTest);
-questionRoutes.put("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.deleteTest);
+questionRoutes.delete("/:id", authenticate, requireRole(["admin", "teacher"]), questionController.deleteTest);
 
 
 module.exports = questionRoutes;
