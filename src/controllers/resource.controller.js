@@ -13,20 +13,6 @@ const getLanguageField = (lang) => {
   }
 };
 
-const getSubjectTitle = (subject, lang) => {
-  if (!subject) return null;
-  switch (lang) {
-    case "uz":
-      return subject.titleUz;
-    case "ru":
-      return subject.titleRu;
-    case "en":
-      return subject.titleEn;
-    default:
-      return null;
-  }
-};
-
 exports.getAllResources = async (req, res) => {
   try {
     const { lang } = req.query;
@@ -34,10 +20,7 @@ exports.getAllResources = async (req, res) => {
     if (lang && !fieldName) {
       return res.status(400).json({ message: "Invalid language request" });
     }
-    const resources = await Resource.find()
-      .populate("teacher")
-      .populate("subject")
-      .sort({ createdAt: -1 });
+    const resources = await Resource.find().sort({ createdAt: -1 });
     const result = resources.map((resource) => {
       return {
         _id: resource._id,
@@ -45,8 +28,6 @@ exports.getAllResources = async (req, res) => {
         titleRu: resource.titleRu,
         titleEn: resource.titleEn,
         resources: resource.resources,
-        teacher: resource.teacher,
-        subject: getSubjectTitle(test.subject, lang),
         title: fieldName ? resource[fieldName] : undefined,
       };
     });
@@ -58,17 +39,18 @@ exports.getAllResources = async (req, res) => {
 
 exports.getResourcesByTeacher = async (req, res) => {
   try {
+    const teacherId = req.teacher?.id;
+    if (!teacherId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
     const { lang } = req.query;
     const fieldName = getLanguageField(lang);
     if (lang && !fieldName) {
       return res.status(400).json({ message: "Invalid language request" });
     }
-    const resources = await Resource.find({ teacher: req.params.id })
-      .populate("subject")
-      .populate("teacher")
-      .sort({
-        createdAt: -1,
-      });
+    const resources = await Resource.find({ teacher: teacherId }).sort({
+      createdAt: -1,
+    });
     const result = resources.map((resource) => {
       return {
         _id: resource._id,
@@ -77,7 +59,6 @@ exports.getResourcesByTeacher = async (req, res) => {
         titleEn: resource.titleEn,
         resources: resource.resources,
         teacher: resource.teacher,
-        subject: getSubjectTitle(test.subject, lang),
         title: fieldName ? resource[fieldName] : undefined,
       };
     });
@@ -94,7 +75,7 @@ exports.getResourceById = async (req, res) => {
     if (lang && !fieldName) {
       return res.status(400).json({ message: "Invalid language request" });
     }
-    const resource = await Resource.findById(req.params.id).populate("subject");
+    const resource = await Resource.findById(req.params.id);
     if (!resource) {
       return res.status(404).json({ message: "Resource not found" });
     }
@@ -105,7 +86,6 @@ exports.getResourceById = async (req, res) => {
       titleEn: resource.titleEn,
       resources: resource.resources,
       teacher: resource.teacher,
-      subject: getSubjectTitle(test.subject, lang),
       title: fieldName ? resource[fieldName] : undefined,
     };
     return res.status(200).json({ data: result });

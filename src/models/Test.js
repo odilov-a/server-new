@@ -11,7 +11,6 @@ const testSchema = new Schema(
       type: String,
     },
     subject: {
-      required: true,
       ref: "subjects",
       type: Types.ObjectId,
     },

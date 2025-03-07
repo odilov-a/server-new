@@ -5,8 +5,8 @@ const { requireRole } = require("../middlewares/role.middleware.js");
 const resourceRouter = Router();
 
 resourceRouter.get("/", authenticate, requireRole(["admin", "teacher", "student"]), resourceController.getAllResources);
-resourceRouter.post("/",  authenticate, requireRole(["admin", "teacher"]), resourceController.createResource);
 resourceRouter.get("/teacher/resource", authenticate, requireRole(["teacher"]), resourceController.getResourcesByTeacher);
+resourceRouter.post("/",  authenticate, requireRole(["admin", "teacher"]), resourceController.createResource);
 
 resourceRouter.get("/:id", authenticate, requireRole(["admin", "teacher", "student"]), resourceController.getResourceById);
 resourceRouter.put("/:id", authenticate, requireRole(["admin", "teacher"]), resourceController.updateResource);
