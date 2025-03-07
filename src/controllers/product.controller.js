@@ -3,35 +3,24 @@ const Product = require("../models/Product.js");
 const getLanguageField = (lang, type) => {
   const fields = {
     name: { uz: "nameUz", ru: "nameRu", en: "nameEn" },
-    description: {
-      uz: "descriptionUz",
-      ru: "descriptionRu",
-      en: "descriptionEn",
-    },
   };
   return fields[type]?.[lang] || null;
 };
 
 const formatProblem = (problem, lang) => {
   const nameField = getLanguageField(lang, "name") || "nameEn";
-  const descriptionField =
-    getLanguageField(lang, "description") || "descriptionEn";
   return {
     _id: problem._id,
     name: problem[nameField],
     nameEn: problem.nameEn,
     nameRu: problem.nameRu,
     nameUz: problem.nameUz,
-    description: problem[descriptionField],
-    descriptionEn: problem.descriptionEn,
-    descriptionRu: problem.descriptionRu,
-    descriptionUz: problem.descriptionUz,
     price: problem.price,
     photoUrl: problem.photoUrl,
   };
 };
 
-exports.getAll = async (req, res) => {
+exports.getAllProducts = async (req, res) => {
   try {
     const { lang } = req.query;
     const products = await Product.find();
@@ -42,7 +31,7 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.getOne = async (req, res) => {
+exports.getOneProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
@@ -54,7 +43,7 @@ exports.getOne = async (req, res) => {
   }
 };
 
-exports.create = async (req, res) => {
+exports.createProduct = async (req, res) => {
   try {
     const product = new Product(req.body);
     await product.save();
@@ -64,7 +53,7 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.update = async (req, res) => {
+exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -78,7 +67,7 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.delete = async (req, res) => {
+exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {

@@ -4,9 +4,11 @@ const { authenticate } = require("../middlewares/auth.middleware.js");
 const { requireRole } = require("../middlewares/role.middleware.js");
 const productRoutes = Router();
 
-productRoutes.get("/", authenticate, requireRole(["admin", "teacher", "student"]), productController.getAll);
-productRoutes.post("/", authenticate, requireRole(["admin"]), productController.create);
-productRoutes.put("/:id", authenticate, requireRole(["admin"]), productController.update);
-productRoutes.delete("/:id", authenticate, requireRole(["admin"]), productController.delete);
+productRoutes.get("/", authenticate, requireRole(["admin", "teacher", "student"]), productController.getAllProducts);
+productRoutes.post("/", authenticate, requireRole(["admin"]), productController.createProduct);
+
+productRoutes.get("/:id", authenticate, requireRole(["admin", "teacher", "student"]), productController.getOneProduct);
+productRoutes.put("/:id", authenticate, requireRole(["admin"]), productController.updateProduct);
+productRoutes.delete("/:id", authenticate, requireRole(["admin"]), productController.deleteProduct);
 
 module.exports = productRoutes;

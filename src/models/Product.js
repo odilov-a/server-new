@@ -17,18 +17,6 @@ const productSchema = new Schema(
       type: Number,
       required: true,
     },
-    descriptionUz: {
-      type: String,
-      required: true,
-    },
-    descriptionRu: {
-      type: String,
-      required: true,
-    },
-    descriptionEn: {
-      type: String,
-      required: true,
-    },
     photoUrl: [
       {
         type: String,
