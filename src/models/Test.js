@@ -13,6 +13,7 @@ const testSchema = new Schema(
     subject: {
       ref: "subjects",
       type: Types.ObjectId,
+      required: true
     },
     point: {
       type: Number,

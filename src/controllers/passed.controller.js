@@ -1,4 +1,4 @@
-const Passed = require("../models/Passed");
+const Passed = require("../models/Passed.js");
 
 exports.getAll = async (req, res) => {
   try {

@@ -1,18 +1,17 @@
 const { Schema, Types, model } = require("mongoose");
-
 const passedSchema = new Schema(
   {
-    user: {
+    student: {
       type: Types.ObjectId,
-      ref: "user",
+      ref: "students",
     },
     admin: {
       type: Types.ObjectId,
-      ref: "admin",
+      ref: "admins",
     },
     teacher: {
       type: Types.ObjectId,
-      ref: "teacher",
+      ref: "teachers",
     },
     test: {
       type: Types.ObjectId,
