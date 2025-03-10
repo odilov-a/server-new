@@ -3,17 +3,17 @@ const studentSchema = new Schema(
   {
     firstName: {
       type: String,
-      required: true,
     },
     lastName: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
+      required: true,
     },
     username: {
       type: String,
+      required: true,
       unique: [true, "Username already exists"],
     },
     email: {

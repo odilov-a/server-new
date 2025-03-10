@@ -113,9 +113,9 @@ exports.checkSolution = async (req, res) => {
     let fileName, command;
     const testDir = path.join(__dirname, "../tests");
     switch (language.toLowerCase()) {
-      case "python":
+      case "python3":
         fileName = `${timestamp}.py`;
-        command = `python ${path.join(testDir, fileName)}`;
+        command = `python3 ${path.join(testDir, fileName)}`;
         break;
       case "java":
         fileName = `Solution.java`;
@@ -235,9 +235,9 @@ exports.testRunCode = async (req, res) => {
     let fileName, command, className;
     const testDir = path.join(__dirname, "../tests");
     switch (language.toLowerCase()) {
-      case "python":
+      case "python3":
         fileName = `${timestamp}.py`;
-        command = `python ${path.join(testDir, fileName)}`;
+        command = `python3 ${path.join(testDir, fileName)}`;
         break;
       case "java":
         fileName = `${timestamp}.java`;
