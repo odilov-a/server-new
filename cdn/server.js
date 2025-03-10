@@ -19,10 +19,10 @@ app.get("/", (req, res) => {
 });
 
 function startServerOnPort(port) {
-  const listen = app.listen(port, () =>
-    console.log(`CDN Server is running on port ${port}`)
-  );
-  listen.on("error", () => {
+  const listen = app.listen(port, "0.0.0.0", () => {
+    console.log(`CDN Server is running on port ${port}`);
+  });
+  listen.on("error", (error) => {
     console.log(`Port ${port} is busy. Trying a different port...`);
     startServerOnPort(port + 1);
   });
