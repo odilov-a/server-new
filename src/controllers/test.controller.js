@@ -101,6 +101,7 @@ exports.createTest = async (req, res) => {
         req.body.questions.map((q) => ({ ...q, test: test._id }))
       );
     }
+    return res.status(201).json({ data: test });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
