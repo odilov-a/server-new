@@ -89,6 +89,18 @@ exports.getTestQuestions = async (req, res) => {
   }
 };
 
+
+exports.getByTeacher = async (req, res) => {
+  try {
+    const tests = await Test.find({ teacher: req.teacher.id }).sort({
+      createdAt: -1,
+    });
+    return res.json({ data: tests });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 exports.createTest = async (req, res) => {
   try {
     const adminId = req.admin?.id;
@@ -177,16 +189,93 @@ exports.checkAnswers = async (req, res) => {
 
 exports.updateTest = async (req, res) => {
   try {
-    const test = await Test.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!test) return res.status(404).json({ message: "Test not found" });
-    if (req.body.questions) {
+    const testId = req.params.id;
+    const updateBody = { ...req.body };
+    delete updateBody.questions;
+    const test = await Test.findByIdAndUpdate(
+      testId,
+      {
+        nameUz: updateBody.nameUz,
+        nameRu: updateBody.nameRu,
+        nameEn: updateBody.nameEn,
+        name: updateBody.nameUz,
+        subject: updateBody.subject,
+        point: updateBody.point,
+      },
+      { new: true }
+    );
+    if (!test) {
+      return res.status(404).json({ message: "Test not found" });
+    }
+    const existingQuestions = await Question.find({ test: test._id });
+    const existingQuestionIds = existingQuestions.map((q) => q._id.toString());
+    const submittedQuestionIds = (req.body.questions || [])
+      .map((q) => q._id)
+      .filter(Boolean);
+    const updatedQuestions = [];
+
+    if (req.body.questions && req.body.questions.length > 0) {
       for (const question of req.body.questions) {
-        await Question.findByIdAndUpdate(question._id, question, { new: true });
+        if (question._id) {
+          const updatedQuestion = await Question.findByIdAndUpdate(
+            question._id,
+            {
+              titleUz: question.titleUz,
+              titleRu: question.titleRu,
+              titleEn: question.titleEn,
+              title: question.titleUz,
+              photoUrl: question.photoUrl,
+              answers: question.answers.map((answer) => ({
+                _id: answer._id,
+                answerUz: answer.answerUz,
+                answerRu: answer.answerRu,
+                answerEn: answer.answerEn,
+                answer: answer.answerUz,
+                isCorrect: answer.isCorrect,
+              })),
+              test: test._id,
+            },
+            { new: true }
+          );
+          if (updatedQuestion) {
+            updatedQuestions.push(updatedQuestion);
+          }
+        } else {
+          const newQuestion = await Question.create({
+            titleUz: question.titleUz,
+            titleRu: question.titleRu,
+            titleEn: question.titleEn,
+            title: question.titleUz,
+            photoUrl: question.photoUrl,
+            answers: question.answers.map((answer) => ({
+              answerUz: answer.answerUz,
+              answerRu: answer.answerRu,
+              answerEn: answer.answerEn,
+              answer: answer.answerUz,
+              isCorrect: answer.isCorrect,
+            })),
+            test: test._id,
+          });
+          updatedQuestions.push(newQuestion);
+        }
       }
     }
-    return res.json({ data: test });
+    const questionsToDelete = existingQuestionIds.filter(
+      (id) => !submittedQuestionIds.includes(id)
+    );
+    if (questionsToDelete.length > 0) {
+      await Question.deleteMany({
+        _id: { $in: questionsToDelete },
+        test: test._id,
+      });
+    }
+    const allQuestions = await Question.find({ test: test._id });
+    return res.json({
+      data: {
+        ...test.toObject(),
+        questions: allQuestions,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
