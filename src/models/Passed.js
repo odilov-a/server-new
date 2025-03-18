@@ -1,9 +1,11 @@
 const { Schema, Types, model } = require("mongoose");
+
 const passedSchema = new Schema(
   {
     student: {
       type: Types.ObjectId,
       ref: "students",
+      required: true,
     },
     admin: {
       type: Types.ObjectId,
@@ -16,6 +18,7 @@ const passedSchema = new Schema(
     test: {
       type: Types.ObjectId,
       ref: "nameTest",
+      required: true,
     },
     createdAt: {
       type: Date,
@@ -26,6 +29,7 @@ const passedSchema = new Schema(
         question: {
           type: Types.ObjectId,
           ref: "Question",
+          required: true,
         },
         selectedAnswer: {
           type: Object,
@@ -35,6 +39,11 @@ const passedSchema = new Schema(
         },
         description: {
           type: String,
+        },
+        status: {
+          type: String,
+          enum: ["pending", "checked"],
+          default: "pending",
         },
       },
     ],

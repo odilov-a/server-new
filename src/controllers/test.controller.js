@@ -36,7 +36,9 @@ exports.getByTeacher = async (req, res) => {
   try {
     const { lang } = req.query;
     const fieldName = getLanguageField(lang);
-    const tests = await Test.find({ teacher: req.teacher.id }).populate("subject").lean();
+    const tests = await Test.find({ teacher: req.teacher.id })
+      .populate("subject")
+      .lean();
     const result = tests.map((test) => ({
       _id: test._id,
       name: fieldName ? test[fieldName] : test.nameEn,
@@ -170,12 +172,16 @@ exports.checkAnswers = async (req, res) => {
       .filter((ans) => ans !== null);
     const percentage = (correctAnswers / totalTestQuestions) * 100;
     let earnedPoints = 0;
-    if (percentage >= 75) {
+    const hasPassedBefore = await Passed.findOne({
+      student: req.userId,
+      test: req.params.id,
+    });
+    if (percentage >= 75 && !hasPassedBefore) {
       findStudent.balance += findTest.point;
       await findStudent.save();
       earnedPoints = findTest.point;
     }
-    const passedTest = await Passed.create({
+    await Passed.create({
       student: req.userId,
       test: req.params.id,
       answers: studentAnswers,
@@ -190,6 +196,29 @@ exports.checkAnswers = async (req, res) => {
       totalQuestions: totalTestQuestions,
       earnedPoints,
     });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+exports.gradeAnswer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { checkedQuestions } = req.body;
+    const passedTest = await Passed.findById(id);
+    if (!passedTest) {
+      return res.status(404).json({ message: "Passed test not found" });
+    }
+    passedTest.answers.forEach((answer) => {
+      const checked = checkedQuestions.find(
+        (q) => q.question.toString() === answer.question.toString()
+      );
+      if (checked) {
+        answer.status = "checked";
+      }
+    });
+    await passedTest.save();
+    return res.json({ message: "Answers marked as checked", passedTest });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
