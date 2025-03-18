@@ -32,6 +32,26 @@ exports.getAllTest = async (req, res) => {
   }
 };
 
+exports.getByTeacher = async (req, res) => {
+  try {
+    const { lang } = req.query;
+    const fieldName = getLanguageField(lang);
+    const tests = await Test.find({ teacher: req.teacher.id }).populate("subject").lean();
+    const result = tests.map((test) => ({
+      _id: test._id,
+      name: fieldName ? test[fieldName] : test.nameEn,
+      point: test.point,
+      subject: test.subject
+        ? test.subject[fieldName.replace("name", "title")] ||
+          test.subject.titleEn
+        : "Unknown",
+    }));
+    return res.json({ data: result });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getTestQuestions = async (req, res) => {
   try {
     const { lang } = req.query;
@@ -84,18 +104,6 @@ exports.getTestQuestions = async (req, res) => {
       })),
     };
     return res.json({ data: localizedTest });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-
-exports.getByTeacher = async (req, res) => {
-  try {
-    const tests = await Test.find({ teacher: req.teacher.id }).sort({
-      createdAt: -1,
-    });
-    return res.json({ data: tests });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
