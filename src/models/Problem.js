@@ -1,6 +1,10 @@
 const { Schema, Types, model } = require("mongoose");
 const problemSchema = new Schema(
   {
+    forArena: {
+      type: Boolean,
+      default: false,
+    },
     titleUz: {
       type: String,
       required: true,
