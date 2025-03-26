@@ -1,4 +1,4 @@
-const { Schema, Schema, model } = require("mongoose");
+const { Schema, model, Types } = require("mongoose");
 const arenaSchema = new Schema(
   {
     titleUz: {
@@ -22,6 +22,10 @@ const arenaSchema = new Schema(
         ref: "problems",
       },
     ],
+    groups: [{
+      type: Types.ObjectId,
+      ref: "groups",
+    }],
     createdAt: {
       type: Date,
       default: Date.now,
@@ -32,5 +36,5 @@ const arenaSchema = new Schema(
   }
 );
 
-const Arena = model("arena", arenaSchema);
+const Arena = model("Arena", arenaSchema);
 module.exports = Arena;

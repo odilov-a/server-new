@@ -23,10 +23,7 @@ exports.getAllArena = async (req, res) => {
     const arena = await Arena.find();
     const result = arena.map((arena) => {
       return {
-        _id: arena._id,
-        titleUz: arena.titleUz,
-        titleRu: arena.titleRu,
-        titleEn: arena.titleEn,
+        ...arena._doc,
         title: fieldName ? arena[fieldName] : undefined,
       };
     });
@@ -48,10 +45,7 @@ exports.getArenaById = async (req, res) => {
       return res.status(404).json({ message: "Arena not found" });
     }
     const result = {
-      _id: arena._id,
-      titleUz: arena.titleUz,
-      titleRu: arena.titleRu,
-      titleEn: arena.titleEn,
+      ...arena._doc,
       title: fieldName ? arena[fieldName] : undefined,
     };
     return res.json({ data: result });

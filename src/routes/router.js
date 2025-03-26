@@ -2,8 +2,10 @@ const { Router } = require("express");
 const orderRoutes = require("./order.routes.js");
 const adminRoutes = require("./admin.routes.js");
 const arenaRoutes = require("./arena.routes.js");
+const groupRoutes = require("./group.routes.js");
 const questionRoutes = require("./test.routes.js");
 const passedRoutes = require("./passed.routes.js")
+const resultRoutes = require("./result.routes.js");
 const studentRoutes = require("./student.routes.js");
 const subjectRoutes = require("./subject.routes.js");
 const problemRoutes = require("./problem.routes.js");
@@ -20,6 +22,8 @@ router.use("/arena", arenaRoutes);
 router.use("/admins", adminRoutes);
 router.use("/orders", orderRoutes);
 router.use("/passed", passedRoutes)
+router.use("/groups", groupRoutes);
+router.use("/results", resultRoutes);
 router.use("/tests", questionRoutes);
 router.use("/students", studentRoutes);
 router.use("/problems", problemRoutes);
