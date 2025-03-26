@@ -1,6 +1,6 @@
 const Result = require("../models/Result");
 
-exports.getAll = async (req, res) => {
+exports.getAllResults = async (req, res) => {
   try {
     const results = await Result.find().populate("arena group problem");
     return res.json({ data: results });
@@ -9,9 +9,11 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.getById = async (req, res) => {
+exports.getByIdResult = async (req, res) => {
   try {
-    const result = await Result.findById(req.params.id).populate("arena group problem");
+    const result = await Result.findById(req.params.id).populate(
+      "arena group problem"
+    );
     if (!result) {
       return res.status(404).json({ message: "Result not found" });
     }
@@ -21,7 +23,7 @@ exports.getById = async (req, res) => {
   }
 };
 
-exports.create = async (req, res) => {
+exports.createResult = async (req, res) => {
   try {
     const result = await Result.create(req.body);
     return res.status(201).json({ data: result });
@@ -30,7 +32,7 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.update = async (req, res) => {
+exports.updateResult = async (req, res) => {
   try {
     const result = await Result.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -44,7 +46,7 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.delete = async (req, res) => {
+exports.deleteResult = async (req, res) => {
   try {
     const result = await Result.findByIdAndDelete(req.params.id);
     if (!result) {

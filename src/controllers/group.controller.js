@@ -1,6 +1,6 @@
 const Group = require("../models/Group.js");
 
-exports.getAll = async (req, res) => {
+exports.getAllGroups = async (req, res) => {
   try {
     const groups = await Group.find();
     return res.json({ data: groups });
@@ -9,7 +9,7 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.getById = async (req, res) => {
+exports.getByIdGroup = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id);
     if (!group) {
@@ -21,7 +21,7 @@ exports.getById = async (req, res) => {
   }
 };
 
-exports.create = async (req, res) => {
+exports.createGroup = async (req, res) => {
   try {
     const group = await Group.create(req.body);
     return res.status(201).json({ data: group });
@@ -30,7 +30,7 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.update = async (req, res) => {
+exports.updateGroup = async (req, res) => {
   try {
     const group = await Group.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -44,7 +44,7 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.delete = async (req, res) => {
+exports.deleteGroup = async (req, res) => {
   try {
     const group = await Group.findByIdAndDelete(req.params.id);
     if (!group) {

@@ -4,20 +4,22 @@ const groupSchema = new Schema(
     name: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
-    players: [{
-      type: Types.ObjectId,
-      ref: "students",
-    }],
+    players: [
+      {
+        type: Types.ObjectId,
+        ref: "students",
+      },
+    ],
     leader: {
       type: Types.ObjectId,
       ref: "students",
     },
     createdAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   },
   {
     versionKey: false,

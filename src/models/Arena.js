@@ -22,10 +22,12 @@ const arenaSchema = new Schema(
         ref: "problems",
       },
     ],
-    groups: [{
-      type: Types.ObjectId,
-      ref: "groups",
-    }],
+    groups: [
+      {
+        type: Types.ObjectId,
+        ref: "groups",
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,
