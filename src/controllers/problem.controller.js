@@ -51,7 +51,7 @@ exports.getAllProblems = async (req, res) => {
   try {
     const { lang } = req.query;
     const problems = await Problem.find()
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result.reverse() });
@@ -64,7 +64,7 @@ exports.getProblemByForArenaTrue = async (req, res) => {
   try {
     const { lang } = req.query;
     const problems = await Problem.find({ forArena: true })
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
@@ -77,7 +77,7 @@ exports.getProblemByForArenaFalse = async (req, res) => {
   try {
     const { lang } = req.query;
     const problems = await Problem.find({ forArena: false })
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
@@ -89,7 +89,7 @@ exports.getProblemByForArenaFalse = async (req, res) => {
 exports.getProblemById = async (req, res) => {
   try {
     const problem = await Problem.findById(req.params.id)
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     if (!problem) {
       return res.status(404).json({ message: "Problem not found" });
@@ -108,7 +108,7 @@ exports.getAllProblemsByTeacher = async (req, res) => {
     }
     const { lang } = req.query;
     const problems = await Problem.find({ teacher: teacherId })
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result.reverse() });
@@ -121,7 +121,7 @@ exports.getAllProblemsByDifficulty = async (req, res) => {
   try {
     const { lang } = req.query;
     const problems = await Problem.find({ difficulty: req.params.difficulty })
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
@@ -134,7 +134,7 @@ exports.getProblemsBySubject = async (req, res) => {
   try {
     const { lang } = req.query;
     const problems = await Problem.find({ subject: req.params.subject })
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
@@ -157,7 +157,7 @@ exports.searchProblems = async (req, res) => {
         { descriptionEn: regex },
       ],
     })
-      .populate("subject difficulty arena")
+      .populate("subject difficulty")
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result });
