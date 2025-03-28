@@ -20,13 +20,18 @@ exports.getAllArena = async (req, res) => {
     if (lang && !fieldName) {
       return res.status(400).json({ message: "Invalid language request" });
     }
-    const arena = await Arena.find();
-    const result = arena.map((arena) => {
-      return {
-        ...arena._doc,
-        title: fieldName ? arena[fieldName] : undefined,
-      };
+    const arena = await Arena.find().populate("groups", "name").populate({
+      path: "problems",
+      select: fieldName,
     });
+    const result = arena.map((arena) => ({
+      ...arena._doc,
+      title: fieldName ? arena[fieldName] : undefined,
+      problems: arena.problems.map((problem) => ({
+        _id: problem._id,
+        title: problem[fieldName],
+      })),
+    }));
     return res.json({ data: result });
   } catch (error) {
     return res.status(500).json({ error: error.message });

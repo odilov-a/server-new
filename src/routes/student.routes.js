@@ -8,7 +8,7 @@ studentRouter.post("/login", studentController.loginStudent);
 studentRouter.post("/register", studentController.registerStudent);
 studentRouter.post("/admin/register", authenticate, requireRole(["admin"]), studentController.adminRegisterStudent);
 
-studentRouter.get("/", authenticate, requireRole(["admin"]), studentController.getAllStudents);
+studentRouter.get("/", authenticate, requireRole(["admin", "student"]), studentController.getAllStudents);
 studentRouter.get("/me", authenticate, requireRole(["student"]), studentController.getMeStudent);
 studentRouter.get("/search", authenticate, requireRole(["admin"]), studentController.searchStudentByFirstNameLastName);
 studentRouter.get("/top/balance", authenticate, requireRole(["admin", "teacher", "student"]), studentController.getTopStudentsByBalance);

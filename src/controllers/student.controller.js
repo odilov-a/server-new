@@ -6,9 +6,16 @@ const Attempt = require("../models/Attempt.js");
 
 exports.getAllStudents = async (req, res) => {
   try {
-    const students = await Student.find().select(
-      "balance firstName isActive lastName phoneNumber photoUrl username lastLogin email"
-    );
+    let students;
+    if (req.admin) {
+      students = await Student.find().select(
+        "balance firstName isActive lastName phoneNumber photoUrl username lastLogin email"
+      );
+    } else if (req.student) {
+      students = await Student.find().select("username _id");
+    } else {
+      return res.status(403).json({ error: "Access denied" });
+    }
     return res.json({ data: students });
   } catch (error) {
     return res.status(500).json({ error: error.message });

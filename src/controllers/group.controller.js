@@ -2,7 +2,15 @@ const Group = require("../models/Group.js");
 
 exports.getAllGroups = async (req, res) => {
   try {
-    const groups = await Group.find();
+    const groups = await Group.find()
+      .populate({
+        path: "players",
+        select: "username firstName lastName",
+      })
+      .populate({
+        path: "leader",
+        select: "username firstName lastName",
+      });
     return res.json({ data: groups });
   } catch (error) {
     return res.status(500).json({ error: error.message });

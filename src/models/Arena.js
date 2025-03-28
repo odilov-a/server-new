@@ -25,7 +25,7 @@ const arenaSchema = new Schema(
     groups: [
       {
         type: Types.ObjectId,
-        ref: "groups",
+        ref: "Group",
       },
     ],
     createdAt: {
