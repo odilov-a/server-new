@@ -39,5 +39,5 @@
 ### 1. Klonlash
 
 ```bash
-git clone https://github.com/your-org/uzcontest.git
-cd uzcontest
+git clone https://github.com/odilov-a/server-new.git
+cd server-new
