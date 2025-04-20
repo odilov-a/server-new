@@ -1,48 +1,43 @@
-!readme
-in production mode : python to python3
+# UzContest
 
-```javascipt
-exports.registerStudent = async (req, res) => {
-  try {
-    const { firstName, lastName, email } = req.body;
-    const existingStudent = await Student.findOne({ email });
-    if (existingStudent) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-    const username = `${firstName}${lastName}`
-      .toLowerCase()
-      .replace(/\s+/g, "")
-      .concat(Math.floor(Math.random() * 10000));
-    const password = Math.random().toString(36).slice(-12);
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const student = new Student({
-      firstName,
-      lastName,
-      email,
-      username,
-      password: hashedPassword,
-    });
-    await student.save();
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
-      },
-    });
-    const mailOptions = {
-      from: '"UzContest" <akbarjonodilov03@gmail.com>',
-      to: email,
-      subject: "UzContest platformasiga muvaffaqiyatli ro'yxatdan o'tdingiz!",
-      text: `Hurmatli ${firstName},\n\nUzContest platformasidan muvaffaqiyatli ro'yxatdan o'tganingiz bilan tabriklaymiz! \n\nShaxsiy login ma'lumotlaringiz:\n- Username: ${username}\n- Parol: ${password}\n\nIltimos, ushbu ma'lumotlarni xavfsiz joyda saqlang va begonalarga oshkor qilmang va xavfsizlik uchun profilingiz ma'lumotlarini o'zgartirib oling!\n\nHar qanday savol yoki tushunmovchilik yuzasidan biz bilan bog'lanishdan tortinmang.\n\nHurmat bilan,\nUzContest jamoasi`,
-    };
-    await transporter.sendMail(mailOptions);
-    return res.status(201).json({
-      message: "Student registered successfully",
-    });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-```
+**UzContest** — bu universitet talabalari va o‘qituvchilari uchun yaratilgan onlayn platforma bo‘lib, o‘quv jarayonini boshqarish, topshiriqlar orqali talabalar bilimini baholash va ular o‘rtasida samarali aloqani ta’minlashga mo‘ljallangan. Loyiha LeetCode’ning o‘zlashtirilgan talqini hisoblanadi.
+
+## 🌐 Demo
+
+- [🌍 Official Website](https://www.uzcontest.uz)
+- [🔐 Admin Dashboard](https://admin.uzcontest.uz)
+- [👨‍🏫 Teacher Dashboard](https://teach.uzcontest.uz)
+- [👨‍🎓 Student Dashboard](https://upskills.uzcontest.uz)
+
+## 📌 Asosiy xususiyatlar
+
+- 👩‍🏫 O‘qituvchilar uchun testlar va kodlash topshiriqlarini yaratish
+- 👨‍🎓 Talabalar uchun imtihonlar va mashqlar
+- 📊 Natijalarni avtomatik tahlil qilish va baholash
+- 🔒 Har bir mijoz uchun alohida izolyatsiyalangan server (DigitalOcean VPS)
+- ⚙️ Admin panel orqali boshqaruv imkoniyatlari
+
+## 🧱 Texnologiyalar
+
+**Frontend:**
+- React.js
+- Tailwind CSS
+
+**Backend:**
+- Node.js (Express.js)
+- MongoDB
+
+**Qo‘shimcha:**
+- DigitalOcean (VPS har bir mijoz uchun)
+- Ubuntu 22.04
+- PM2 + Nginx (deployment)
+- WebSocket (real-time monitoring)
+- JWT (autentifikatsiya)
+
+## 🔧 O‘rnatish
+
+### 1. Klonlash
+
+```bash
+git clone https://github.com/your-org/uzcontest.git
+cd uzcontest
