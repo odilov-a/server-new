@@ -33,7 +33,6 @@
 - DigitalOcean (VPS har bir mijoz uchun)
 - Ubuntu 22.04
 - PM2 + Nginx (deployment)
-- WebSocket (real-time monitoring)
 - JWT (autentifikatsiya)
 
 ## 🔧 O‘rnatish
