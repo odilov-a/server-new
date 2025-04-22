@@ -6,6 +6,8 @@
 
 - [🌍 Official Website](https://www.uzcontest.uz)
 - [🔐 Admin Dashboard](https://admin.uzcontest.uz)
+- username: admin
+- password: admin
 - [👨‍🏫 Teacher Dashboard](https://teach.uzcontest.uz)
 - [👨‍🎓 Student Dashboard](https://upskills.uzcontest.uz)
 
