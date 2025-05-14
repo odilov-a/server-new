@@ -13,6 +13,15 @@ const getLanguageField = (lang) => {
   }
 };
 
+exports.allArena = async (req, res) => {
+  try {
+    const arena = await Arena.find().populate("groups").populate("problems");
+    return res.json({ data: arena });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getAllArena = async (req, res) => {
   try {
     const { lang } = req.query;
