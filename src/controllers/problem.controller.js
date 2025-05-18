@@ -30,7 +30,6 @@ const formatProblem = (problem, lang) => {
     tutorials: problem.tutorials,
     testCases: problem.testCases,
     timeLimit: problem.timeLimit,
-    forArena: problem.forArena,
     memoryLimit: problem.memoryLimit,
     subject: {
       _id: problem.subject?._id,
@@ -55,32 +54,6 @@ exports.getAllProblems = async (req, res) => {
       .lean();
     const result = problems.map((problem) => formatProblem(problem, lang));
     return res.json({ data: result.reverse() });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getProblemByForArenaTrue = async (req, res) => {
-  try {
-    const { lang } = req.query;
-    const problems = await Problem.find({ forArena: true })
-      .populate("subject difficulty")
-      .lean();
-    const result = problems.map((problem) => formatProblem(problem, lang));
-    return res.json({ data: result });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getProblemByForArenaFalse = async (req, res) => {
-  try {
-    const { lang } = req.query;
-    const problems = await Problem.find({ forArena: false })
-      .populate("subject difficulty")
-      .lean();
-    const result = problems.map((problem) => formatProblem(problem, lang));
-    return res.json({ data: result });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -173,7 +146,6 @@ exports.createProblem = async (req, res) => {
     if (!teacherId && !adminId) {
       return res.status(401).json({ message: "User not authenticated" });
     }
-    const forArena = req.body.forArena === "true";
     const subjectId = req.body.subject?._id || req.body.subject?.value;
     const difficultyId = req.body.difficulty?._id || req.body.difficulty?.value;
     if (
@@ -198,7 +170,6 @@ exports.createProblem = async (req, res) => {
       difficulty: difficultyId,
       teacher: teacherId,
       admin: adminId,
-      forArena,
     });
     await newProblem.save();
     return res.status(201).json({ data: newProblem });

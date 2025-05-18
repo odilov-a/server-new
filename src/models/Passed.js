@@ -4,20 +4,20 @@ const passedSchema = new Schema(
   {
     student: {
       type: Types.ObjectId,
-      ref: "students",
+      ref: "Student",
       required: true,
     },
     admin: {
       type: Types.ObjectId,
-      ref: "admins",
+      ref: "Admin",
     },
     teacher: {
       type: Types.ObjectId,
-      ref: "teachers",
+      ref: "Teacher",
     },
     test: {
       type: Types.ObjectId,
-      ref: "nameTest",
+      ref: "NameTest",
       required: true,
     },
     createdAt: {

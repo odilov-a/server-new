@@ -12,7 +12,7 @@ const teacherSchema = new Schema(
     subject: [
       {
         type: Types.ObjectId,
-        ref: "subjects",
+        ref: "Subject",
         required: true,
         index: true,
       },
@@ -50,5 +50,5 @@ const teacherSchema = new Schema(
   }
 );
 
-const Teacher = model("teachers", teacherSchema);
+const Teacher = model("Teacher", teacherSchema);
 module.exports = Teacher;

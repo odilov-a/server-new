@@ -3,7 +3,7 @@ const orderSchema = new Schema(
   {
     student: {
       type: Types.ObjectId,
-      ref: "students",
+      ref: "Student",
       required: true,
     },
     product: {

@@ -19,5 +19,5 @@ const translationSchema = new Schema(
   }
 );
 
-const Translation = model("translations", translationSchema);
+const Translation = model("Translation", translationSchema);
 module.exports = Translation;

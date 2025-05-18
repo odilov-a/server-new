@@ -3,13 +3,13 @@ const AttemptSchema = new Schema(
   {
     studentId: {
       type: Types.ObjectId,
-      ref: "students",
+      ref: "Student",
       required: true,
       index: true,
     },
     problemId: {
       type: Types.ObjectId,
-      ref: "problems",
+      ref: "Problem",
       required: true,
       index: true,
     },
@@ -45,5 +45,5 @@ const AttemptSchema = new Schema(
   }
 );
 
-const Attempt = model("attempts", AttemptSchema);
+const Attempt = model("Attempt", AttemptSchema);
 module.exports = Attempt;

@@ -1,10 +1,6 @@
 const { Schema, Types, model } = require("mongoose");
 const problemSchema = new Schema(
   {
-    forArena: {
-      type: Boolean,
-      default: false,
-    },
     titleUz: {
       type: String,
       required: true,
@@ -59,24 +55,24 @@ const problemSchema = new Schema(
     },
     subject: {
       type: Types.ObjectId,
-      ref: "subjects",
+      ref: "Subject",
       required: true,
       index: true,
     },
     difficulty: {
       type: Types.ObjectId,
-      ref: "difficulties",
+      ref: "Difficulty",
       required: true,
       index: true,
     },
     teacher: {
       type: Types.ObjectId,
-      ref: "teachers",
+      ref: "Teacher",
       index: true,
     },
     admin: {
       type: Types.ObjectId,
-      ref: "admins",
+      ref: "Admin",
       index: true,
     },
     createdAt: {
@@ -89,5 +85,5 @@ const problemSchema = new Schema(
   }
 );
 
-const Problem = model("problems", problemSchema);
+const Problem = model("Problem", problemSchema);
 module.exports = Problem;

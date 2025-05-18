@@ -3,12 +3,12 @@ const FeedbackSchema = new Schema(
   {
     student: {
       type: Types.ObjectId,
-      ref: "students",
+      ref: "Student",
       index: true,
     },
     teacher: {
       type: Types.ObjectId,
-      ref: "teachers",
+      ref: "Teacher",
       index: true,
     },
     feedback: {
@@ -29,5 +29,5 @@ const FeedbackSchema = new Schema(
   }
 );
 
-const Feedback = model("feedbacks", FeedbackSchema);
+const Feedback = model("Feedback", FeedbackSchema);
 module.exports = Feedback;

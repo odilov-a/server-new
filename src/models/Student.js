@@ -34,7 +34,7 @@ const studentSchema = new Schema(
     history: [
       {
         type: Types.ObjectId,
-        ref: "problems",
+        ref: "Problem",
         index: true,
       },
     ],
@@ -60,5 +60,5 @@ const studentSchema = new Schema(
   }
 );
 
-const Student = model("students", studentSchema);
+const Student = model("Student", studentSchema);
 module.exports = Student;

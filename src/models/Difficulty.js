@@ -26,5 +26,5 @@ const difficultySchema = new Schema(
   }
 );
 
-const Difficulty = model("difficulties", difficultySchema);
+const Difficulty = model("Difficulty", difficultySchema);
 module.exports = Difficulty;

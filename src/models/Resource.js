@@ -21,12 +21,12 @@ const resourceSchema = new Schema(
     ],
     teacher: {
       type: Types.ObjectId,
-      ref: "teachers",
+      ref: "Teacher",
       index: true,
     },
     admin: {
       type: Types.ObjectId,
-      ref: "admins",
+      ref: "Admin",
       index: true,
     },
     createdAt: {

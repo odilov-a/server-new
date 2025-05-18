@@ -3,7 +3,6 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
 dotenv.config();
-require("./src/backup.js");
 require("./src/connection.js");
 
 const router = require("./src/routes/router.js");

@@ -11,7 +11,7 @@ const testSchema = new Schema(
       type: String,
     },
     subject: {
-      ref: "subjects",
+      ref: "Subject",
       type: Types.ObjectId,
       required: true,
     },
@@ -24,11 +24,11 @@ const testSchema = new Schema(
     },
     teacher: {
       type: Types.ObjectId,
-      ref: "teacher",
+      ref: "Teacher",
     },
     admin: {
       type: Types.ObjectId,
-      ref: "admin",
+      ref: "Admin",
     },
   },
   {
@@ -36,5 +36,5 @@ const testSchema = new Schema(
   }
 );
 
-const Test = model("nameTest", testSchema);
+const Test = model("NameTest", testSchema);
 module.exports = Test;
