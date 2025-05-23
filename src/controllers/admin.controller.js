@@ -38,6 +38,9 @@ exports.getAdminById = async (req, res) => {
 exports.registerAdmin = async (req, res) => {
   try {
     const { password, ...otherData } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: "Password is required" });
+    }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const admin = new Admin({
